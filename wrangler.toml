@@ -1,0 +1,7 @@
+name = "spoons-cheap"
+account_id = "1e8c347d09a13db3e3d9a9b45bad28ab"
+type = "webpack"
+route = 'spoons.cheap/*'
+zone_id = 'ce5763e8db18f9b8de1a3229788aace1'
+workers_dev = true
+site = {bucket = "./build",entry-point = "workers-site"}
