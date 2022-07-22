@@ -20,7 +20,6 @@ const SearchContainer = styled(Container)({
 
 const Search = styled((props) => (
   <Autocomplete
-    value={props.value}
     onChange={props.onChange}
     fullWidth
     options={props.options}
@@ -103,6 +102,15 @@ function App() {
   useEffect(() => {
     (async function () {
       const res = await axios.get("/v1/venues/en_gb/venues.json");
+      for(let i = 0; i < res.data.venues.length; i++) {
+        const venue = res.data.venues[i];
+        if(venue.pubIsClosed || venue.pubIsTempClosed) {
+          res.data.venues.splice(venue, 1);
+          i--;
+          console.log(`${venue.name} is closed ☹ Removing from list`)
+        }
+      }
+      console.log(`Found ${res.data.venues.length} open Wetherspoons!`)
       setPubs(res.data.venues);
     })();
   }, []);
@@ -125,10 +133,9 @@ function App() {
           onChange={(event, value) => {
             setPub(value);
           }}
-          value={pub}
         ></Search>
         <SearchResults
-          drinks={drinks}
+          drinks={drinks} pub={pub}
         />
       </SearchContainer>
     </Root>

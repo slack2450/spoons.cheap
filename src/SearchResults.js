@@ -2,6 +2,12 @@ import { styled } from "@material-ui/core";
 import { motion } from "framer-motion";
 import React, { useState } from "react";
 
+import axios from "axios";
+
+import Chart from 'react-apexcharts'
+
+const PubContext = React.createContext();
+
 const Root = styled((props) => (
   <motion.div
     animate={{ opacity: [0, 1] }}
@@ -24,10 +30,23 @@ const Root = styled((props) => (
   marginBottom: "24px",
 }));
 
-function Result({ drink, onClick }) {
+function Result({ drink }) {
 
+  const { venueId } = React.useContext(PubContext);
 
+  const [priceData, setPriceData] = useState([]);
+  const [fetchedPriceData, setFetchedPriceData] = useState(false);
   const [detailedInfo, setDetailedInfo] = useState(false);
+
+  async function click() {
+    setDetailedInfo(!detailedInfo);
+    if (!fetchedPriceData && venueId) {
+      const response = await axios.get(`https://api.spoons.cheap/price/${venueId}/${drink.eposName}`);
+      setFetchedPriceData(true);
+      response.data.push({price: drink.priceValue, timestamp: Date.now()})
+      setPriceData(response.data);
+    }
+  }
 
   return (
     <motion.div
@@ -48,7 +67,7 @@ function Result({ drink, onClick }) {
         boxShadow: "10px 10px 15px rgba(0,0,0,0.4)",
         transition: { duration: 0.2 },
       }}
-      onClick={() => setDetailedInfo(!detailedInfo)}
+      onClick={click}
     >
       <p
         style={{
@@ -94,16 +113,62 @@ function Result({ drink, onClick }) {
       >
         {`${drink.units} units`}
       </p>
+      <PriceChart data={priceData} display={detailedInfo}/>
+
     </motion.div>
   );
 }
 
-export default function SearchResults({ drinks }) {
+export default function SearchResults({ drinks, pub }) {
+
   return (
-    <Root>
-      {drinks.map((drink) => {
-        return <Result drink={drink} />;
-      })}
-    </Root>
+    <PubContext.Provider value={pub ? pub : { venueId: 'none'}}>
+      <Root>
+        {drinks.map((drink) => {
+          return <Result key={drink.eposName} drink={drink} />;
+        })}
+      </Root>
+    </PubContext.Provider>
   );
+}
+
+function PriceChart({ data, display }) {
+
+  const state = {
+    options: {
+      chart: {
+        type: 'area',
+        zoom: {
+          enabled: false,
+        },
+        toolbar: {
+          show: false,
+        },
+      },
+      dataLabels : {
+        enabled: false
+      },
+      stroke: {
+        curve: 'straight'
+      },
+      xaxis: {
+        type: 'datetime',
+      },
+      tooltip: {
+        y: {
+          formatter: (p) => `£${p.toFixed(2)}`
+        }
+      }
+    },
+    series: [{
+      name: 'Price',
+      data: data.map((point) => [point.timestamp, point.price])
+    }]
+  }
+
+  return <div style={{
+    display: display ? "block" : "none",
+  }}>
+    <Chart options={state.options} series={state.series} type="area"/>
+  </div>
 }
