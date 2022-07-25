@@ -1,6 +1,6 @@
 import { styled } from "@material-ui/core";
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import axios from "axios";
 
@@ -41,12 +41,18 @@ function Result({ drink }) {
   async function click() {
     setDetailedInfo(!detailedInfo);
     if (!fetchedPriceData && venueId) {
-      const response = await axios.get(`https://api.spoons.cheap/price/${venueId}/${drink.eposName}`);
+      const response = await axios.get(`https://api.spoons.cheap/price/${venueId}/${drink.productId}`);
       setFetchedPriceData(true);
       response.data.push({price: drink.priceValue, timestamp: Date.now()})
       setPriceData(response.data);
     }
   }
+
+  useEffect(() => {
+    setPriceData([]);
+    setFetchedPriceData(false);
+    setDetailedInfo(false);
+  }, [venueId]);
 
   return (
     <motion.div
@@ -134,8 +140,7 @@ export default function SearchResults({ drinks, pub }) {
 
 function PriceChart({ data, display }) {
 
-  const state = {
-    options: {
+    const options = {
       chart: {
         type: 'area',
         zoom: {
@@ -159,16 +164,16 @@ function PriceChart({ data, display }) {
           formatter: (p) => `£${p.toFixed(2)}`
         }
       }
-    },
-    series: [{
+    }
+    
+    const series = [{
       name: 'Price',
       data: data.map((point) => [point.timestamp, point.price])
     }]
-  }
 
   return <div style={{
     display: display ? "block" : "none",
   }}>
-    <Chart options={state.options} series={state.series} type="area"/>
+    <Chart options={options} series={series} type="area"/>
   </div>
 }
