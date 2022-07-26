@@ -41,7 +41,7 @@ function Result({ drink }) {
   async function click() {
     setDetailedInfo(!detailedInfo);
     if (!fetchedPriceData && venueId) {
-      const response = await axios.get(`https://api.spoons.cheap/price/${venueId}/${drink.productId}`);
+      const response = await axios.get(`https://api.spoons.cheap/v1/price/${venueId}/${drink.productId}`);
       setFetchedPriceData(true);
       response.data.push({price: drink.priceValue, timestamp: Date.now()})
       setPriceData(response.data);
@@ -120,7 +120,6 @@ function Result({ drink }) {
         {`${drink.units} units`}
       </p>
       <PriceChart data={priceData} display={detailedInfo}/>
-
     </motion.div>
   );
 }
