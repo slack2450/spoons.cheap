@@ -43,7 +43,7 @@ function Result({ drink }) {
     if (!fetchedPriceData && venueId) {
       const response = await axios.get(`https://api.spoons.cheap/v1/price/${venueId}/${drink.productId}`);
       setFetchedPriceData(true);
-      response.data.push({price: drink.priceValue, timestamp: Date.now()})
+      response.data.push({ price: drink.priceValue, timestamp: Date.now() })
       setPriceData(response.data);
     }
   }
@@ -119,7 +119,7 @@ function Result({ drink }) {
       >
         {`${drink.units} units`}
       </p>
-      <PriceChart data={priceData} display={detailedInfo}/>
+      <PriceChart data={priceData} display={detailedInfo} />
     </motion.div>
   );
 }
@@ -127,7 +127,7 @@ function Result({ drink }) {
 export default function SearchResults({ drinks, pub }) {
 
   return (
-    <PubContext.Provider value={pub ? pub : { venueId: 'none'}}>
+    <PubContext.Provider value={pub ? pub : { venueId: 'none' }}>
       <Root>
         {drinks.map((drink) => {
           return <Result key={drink.eposName} drink={drink} />;
@@ -139,40 +139,40 @@ export default function SearchResults({ drinks, pub }) {
 
 function PriceChart({ data, display }) {
 
-    const options = {
-      chart: {
-        type: 'area',
-        zoom: {
-          enabled: false,
-        },
-        toolbar: {
-          show: false,
-        },
+  const options = {
+    chart: {
+      type: 'area',
+      zoom: {
+        enabled: false,
       },
-      dataLabels : {
-        enabled: false
+      toolbar: {
+        show: false,
       },
-      stroke: {
-        curve: 'straight'
-      },
-      xaxis: {
-        type: 'datetime',
-      },
-      tooltip: {
-        y: {
-          formatter: (p) => `£${p.toFixed(2)}`
-        }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'straight'
+    },
+    xaxis: {
+      type: 'datetime',
+    },
+    tooltip: {
+      y: {
+        formatter: (p) => `£${p.toFixed(2)}`
       }
     }
-    
-    const series = [{
-      name: 'Price',
-      data: data.map((point) => [point.timestamp, point.price])
-    }]
+  }
+
+  const series = [{
+    name: 'Price',
+    data: data.map((point) => [point.timestamp, point.price]).sort((a, b) => a[0] - b[0])
+  }]
 
   return <div style={{
     display: display ? "block" : "none",
   }}>
-    <Chart options={options} series={series} type="area"/>
+    <Chart options={options} series={series} type="area" />
   </div>
 }
