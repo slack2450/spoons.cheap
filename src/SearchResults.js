@@ -43,6 +43,7 @@ function Result({ drink }) {
     if (!fetchedPriceData && venueId) {
       const response = await axios.get(`https://api.spoons.cheap/v1/price/${venueId}/${drink.productId}`);
       setFetchedPriceData(true);
+      response.data.push({ price: drink.priceValue, timestamp: new Date().setHours(0, 0, 0, 0) })
       response.data.push({ price: drink.priceValue, timestamp: Date.now() })
       setPriceData(response.data);
     }
@@ -139,7 +140,7 @@ export default function SearchResults({ drinks, pub }) {
 
 function PriceChart({ data, display }) {
 
-  const options = {
+  const [options, setOptions] = useState({
     chart: {
       type: 'area',
       zoom: {
@@ -153,22 +154,66 @@ function PriceChart({ data, display }) {
       enabled: false
     },
     stroke: {
-      curve: 'straight'
+      curve: 'stepline'
     },
     xaxis: {
       type: 'datetime',
+    },
+    yaxis: {
+      min: Math.floor(data.map((point) => point.price).sort()[0]),
+      tickAmount: 5,
     },
     tooltip: {
       y: {
         formatter: (p) => `£${p.toFixed(2)}`
       }
     }
-  }
+  });
 
-  const series = [{
+  const [series, setSeries] = useState([{
     name: 'Price',
-    data: data.map((point) => [point.timestamp, point.price]).sort((a, b) => a[0] - b[0])
-  }]
+    data: [],
+  }]);
+
+  useEffect(() => {
+    setOptions({
+      chart: {
+        type: 'area',
+        zoom: {
+          enabled: false,
+        },
+        toolbar: {
+          show: false,
+        },
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'stepline'
+      },
+      xaxis: {
+        type: 'datetime',
+      },
+      yaxis: {
+        min: Math.floor(data.map((point) => point.price).sort()[0]),
+        tickAmount: 5,
+      },
+      tooltip: {
+        y: {
+          formatter: (p) => `£${p.toFixed(2)}`
+        }
+      }
+    });
+
+    setSeries([{
+      name: 'Price',
+      data: data.map((point) => [point.timestamp, point.price]).sort((a, b) => a[0] - b[0])
+    }]);
+
+  }, [data]);
+
+  //console.log(Math.floor(data.map((point) => point.price).sort()[0]));
 
   return <div style={{
     display: display ? "block" : "none",
