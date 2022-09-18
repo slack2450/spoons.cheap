@@ -2,11 +2,10 @@ import { styled } from "@material-ui/core";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 
-import axios from "axios";
-
 import Chart from 'react-apexcharts'
 
 const PubContext = React.createContext();
+const HistoricalPriceContext = React.createContext();
 
 const Root = styled((props) => (
   <motion.div
@@ -34,6 +33,8 @@ function Result({ drink }) {
 
   const { venueId } = React.useContext(PubContext);
 
+  const { historicalData } = React.useContext(HistoricalPriceContext);
+
   const [priceData, setPriceData] = useState([]);
   const [fetchedPriceData, setFetchedPriceData] = useState(false);
   const [detailedInfo, setDetailedInfo] = useState(false);
@@ -41,11 +42,17 @@ function Result({ drink }) {
   async function click() {
     setDetailedInfo(!detailedInfo);
     if (!fetchedPriceData && venueId) {
-      const response = await axios.get(`https://api.spoons.cheap/v1/price/${venueId}/${drink.productId}`);
       setFetchedPriceData(true);
-      response.data.push({ price: drink.priceValue, timestamp: new Date().setHours(0, 0, 0, 0) })
-      response.data.push({ price: drink.priceValue, timestamp: Date.now() })
-      setPriceData(response.data);
+      const historicalPricing = historicalData.map((drinksOnDate) => {
+        const mapDrink = drinksOnDate.drinks.find(d => d.productId === drink.productId);
+        return {
+          timestamp: drinksOnDate.date,
+          price: mapDrink ? mapDrink.price : 0
+        }
+      });
+
+      const filteredData = historicalPricing.filter(d => d.price !== 0 && typeof d.price !== 'undefined');
+      setPriceData(filteredData);
     }
   }
 
@@ -125,15 +132,129 @@ function Result({ drink }) {
   );
 }
 
-export default function SearchResults({ drinks, pub }) {
+function PubRanking({ pub, rankings }) {
+  if (!pub)
+    return <></>;
+
+  let mostRecentRankingDate = 0;
+  let mostRecentRanking = { pubs: []};
+  for(const ranking of rankings) {
+    if(ranking.date > mostRecentRankingDate) {
+      mostRecentRankingDate = ranking.date;
+      mostRecentRanking = ranking;
+    }
+  }
+
+  const mostRecentRank = mostRecentRanking.pubs.find(p => p.venueId === pub.venueId)?.rank;
+  const highestRank = Math.max(...mostRecentRanking.pubs.map(p => p.rank));
+
+  const options = {
+    chart: {
+      type: 'area',
+      zoom: {
+        enabled: false,
+      },
+      toolbar: {
+        show: false,
+      },
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'smooth'
+    },
+    xaxis: {
+      type: 'datetime',
+    },
+    yaxis: {
+      max: highestRank,
+      min: 1,
+      tickAmount: 5,
+      reversed: true,
+    },
+    tooltip: {
+      y: {
+        formatter: (p) => `${p}`
+      }
+    }
+  }
+
+  const series = [{
+    name: 'Ranking',
+    data: rankings.map((ranking) => [ranking.date, ranking.pubs.find(p=> p.venueId === pub.venueId)?.rank]).filter(point=> typeof point[1] !== 'undefined').sort((a, b) => a[0] - b[0])
+  }]
+
+  console.log('Ranking series');
+  console.log(series);
+
+  return (
+      <motion.div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#dcdcdc",
+          borderRadius: "5px",
+          display: "grid",
+          placeItems: "center",
+          padding: "10px",
+          boxShadow: "5px 5px 5px rgba(0,0,0,0.4)",
+          cursor: "pointer",
+        }}
+        whileHover={{
+          translateX: "-5px",
+          translateY: "-5px",
+          boxShadow: "10px 10px 15px rgba(0,0,0,0.4)",
+          transition: { duration: 0.2 },
+        }}
+      //onClick={click}
+      >
+        <p
+          style={{
+            textAlign: "center",
+            fontWeight: "bold",
+            margin: 0,
+          }}
+        >
+          {pub.name}
+        </p>
+        <p
+        style={{
+          textAlign: "center",
+          margin: 0,
+        }}
+      >
+        {`${mostRecentRank}/${highestRank} in the UK on ${(new Date(mostRecentRanking.date)).toDateString()}`}
+      </p>
+      <div style={{
+        display: "block"
+      }}>
+        <Chart options={options} series={series} type="area" />
+      </div>
+      </motion.div>)
+}
+
+export default function SearchResults({ drinks: historicalDrinks, pub, rankings }) {
+
+  let todaysDrinks = { drinks: [] };
+  let mostRecent = 0;
+  for (const drinkPrices of historicalDrinks) {
+    if (drinkPrices.date > mostRecent) {
+      todaysDrinks = drinkPrices;
+      mostRecent = drinkPrices.date;
+    }
+  }
 
   return (
     <PubContext.Provider value={pub ? pub : { venueId: 'none' }}>
-      <Root>
-        {drinks.map((drink) => {
-          return <Result key={drink.eposName} drink={drink} />;
-        })}
-      </Root>
+      <HistoricalPriceContext.Provider value={{ historicalData: historicalDrinks }}>
+        <PubRanking pub={pub} rankings={rankings} />
+        <Root>
+          {todaysDrinks.drinks.map((drink) => {
+            return <Result key={drink.productId} drink={drink} />;
+          })}
+        </Root>
+      </HistoricalPriceContext.Provider>
     </PubContext.Provider>
   );
 }
@@ -154,7 +275,7 @@ function PriceChart({ data, display }) {
       enabled: false
     },
     stroke: {
-      curve: 'stepline'
+      curve: 'smooth',
     },
     xaxis: {
       type: 'datetime',
@@ -190,7 +311,7 @@ function PriceChart({ data, display }) {
         enabled: false
       },
       stroke: {
-        curve: 'stepline'
+        curve: 'smooth'
       },
       xaxis: {
         type: 'datetime',

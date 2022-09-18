@@ -40,17 +40,8 @@ const Search = styled((props) => (
   paddingLeft: "15px",
 });
 
-function App() {
-  const [pubs, setPubs] = useState([]);
-
-  const [pub, setPub] = useState(null);
-
-  const [drinks, setDrinks] = useState([]);
-
-  useEffect(() => {
-    if (!pub) return;
-    (async function () {
-      const res = await axios.get(`/content/v3/menus/${pub.venueId}.json`);
+async function getTodaysDrinks(pub) {
+  const res = await axios.get(`/content/v3/menus/${pub.venueId}.json`);
 
       let drinksMenu;
       for (const menu of res.data.menus) {
@@ -91,13 +82,65 @@ function App() {
 
       drinks.sort((a, b) => {
         return a.ppu - b.ppu;
-      })
+      });
 
-      console.log(drinks);
+      return drinks
+}
 
-      setDrinks(drinks);
+function App() {
+  const [pubs, setPubs] = useState([]);
+  const [rankings, setRankings] = useState([]);
+
+  const [pub, setPub] = useState(null);
+
+  const [drinks, setDrinks] = useState([]);
+
+  useEffect(() => {
+
+    setDrinks([]);
+
+    if (!pub) return;
+    (async function () {
+      const todaysDrinks = await getTodaysDrinks(pub);
+      const todaysDate = Date.now();
+
+      console.log('Fetched todays drinks')
+      console.log(todaysDrinks);
+
+      setDrinks(drinks => {
+        drinks.push({
+          date: todaysDate,
+          drinks: todaysDrinks,
+        });
+        return [...drinks];
+      });
+    })();
+
+    (async () => {
+      const res = await axios.get(`https://api.spoons.cheap/v1/price/${pub.venueId}`);
+      console.log(res.data)
+
+      console.log(`Fetched historical`);
+      console.log(res.data);
+
+      for(const date of res.data) {
+        for(const drink of date.drinks) {
+          drink.ppu = drink.price / drink.units;
+        }
+      }
+
+      setDrinks(drinks => {
+        drinks.push(...res.data);
+        return [...drinks];
+      });
     })();
   }, [pub]);
+
+  useEffect(()=> {
+    console.log('Drinks updated to:')
+    console.log(typeof drinks);
+    console.log(drinks);
+  }, [drinks]);
 
   useEffect(() => {
     (async function () {
@@ -112,6 +155,11 @@ function App() {
       }
       console.log(`Found ${res.data.venues.length} open Wetherspoons!`)
       setPubs(res.data.venues);
+    })();
+
+    (async function() {
+      const res = await axios.get('https://api.spoons.cheap/v1/rankings');
+      setRankings(res.data);
     })();
   }, []);
 
@@ -135,7 +183,7 @@ function App() {
           }}
         ></Search>
         <SearchResults
-          drinks={drinks} pub={pub}
+          drinks={drinks} pub={pub} rankings={rankings}
         />
       </SearchContainer>
     </Root>
