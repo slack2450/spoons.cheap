@@ -128,7 +128,7 @@ function Result({ drink }: { drink: FixMeLater }) {
           display: detailedInfo ? 'block' : 'none',
         }}
       >
-        {`${drink.units} units`}
+        {`${drink.units} ${drink.units === 1 ? 'unit' : 'units'}`}
       </p>
       <PriceChart data={priceData} display={detailedInfo} />
     </motion.div>
