@@ -63,7 +63,6 @@ export async function getOpenPubs(): Promise<Pub[]> {
     const venue = res.data.venues[i];
     if (venue.pubIsClosed || venue.pubIsTempClosed) {
       res.data.venues.splice(venue, 1);
-      console.log(`${venue.name} is closed ☹ Removing from list`);
       continue;
     }
     pubs.push(venue);

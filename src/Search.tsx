@@ -1,6 +1,7 @@
 import { styled, TextField, TextFieldProps } from '@material-ui/core';
 import { Autocomplete, UseAutocompleteProps } from '@material-ui/lab';
 import React from 'react';
+import { FixMeLater } from './FixMeLater';
 import { Pub } from './types/Pub';
 
 function AutocompleteInput(props: TextFieldProps): JSX.Element {
@@ -32,9 +33,6 @@ type SearchProps = {
 };
 
 export function Search(props: SearchProps): JSX.Element {
-  console.log('props');
-  console.log(props);
-
   return (
     <Autocomplete
       onChange={props.onChange}
@@ -44,6 +42,9 @@ export function Search(props: SearchProps): JSX.Element {
       renderInput={(params: TextFieldProps) => (
         <StyledAutoCompleteInput {...params} className={props.className} />
       )}
+      getOptionSelected={(option: FixMeLater, value: FixMeLater) =>
+        option.venueId === value.venueId
+      }
     />
   );
 }

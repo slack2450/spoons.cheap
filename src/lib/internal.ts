@@ -9,10 +9,6 @@ export async function getHistoricalDrinks(
   venueId: string
 ): Promise<DrinksOnDate[]> {
   const res = await axiosInstance.get(`/v1/price/${venueId}`);
-  console.log(res.data);
-
-  console.log(`Fetched historical`);
-  console.log(res.data);
 
   // Calculate price per unit
   for (const date of res.data) {

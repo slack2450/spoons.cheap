@@ -36,13 +36,11 @@ function Result({ drink }: { drink: FixMeLater }) {
   const { historicalData } = React.useContext(HistoricalPriceContext);
 
   const [priceData, setPriceData] = useState([]);
-  const [fetchedPriceData, setFetchedPriceData] = useState(false);
   const [detailedInfo, setDetailedInfo] = useState(false);
 
   async function click() {
     setDetailedInfo(!detailedInfo);
-    if (!fetchedPriceData && venueId) {
-      setFetchedPriceData(true);
+    if (venueId) {
       const historicalPricing = historicalData.map(
         (drinksOnDate: FixMeLater) => {
           const mapDrink = drinksOnDate.drinks.find(
@@ -64,7 +62,6 @@ function Result({ drink }: { drink: FixMeLater }) {
 
   useEffect(() => {
     setPriceData([]);
-    setFetchedPriceData(false);
     setDetailedInfo(false);
   }, [venueId]);
 
@@ -207,9 +204,6 @@ function PubRanking({
         .sort((a: FixMeLater, b: FixMeLater) => a[0] - b[0]),
     },
   ];
-
-  console.log('Ranking series');
-  console.log(series);
 
   return (
     <motion.div
