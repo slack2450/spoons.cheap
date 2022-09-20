@@ -6,6 +6,7 @@ import App from './App';
 
 import axios from 'axios';
 
+//import { register } from './serviceWorkerRegistration';
 import * as serviceWorker from './serviceWorkerRegistration';
 
 const theme = createTheme({});
@@ -13,14 +14,14 @@ const theme = createTheme({});
 axios.defaults.baseURL = 'https://static.wsstack.nn4maws.net';
 
 ReactDOM.render(
-    <React.StrictMode>
-        <MuiThemeProvider theme={theme}>
-            <CssBaseline>
-                <App />
-            </CssBaseline>
-        </MuiThemeProvider>
-    </React.StrictMode>,
-    document.getElementById('root')
+  <React.StrictMode>
+    <MuiThemeProvider theme={theme}>
+      <CssBaseline>
+        <App />
+      </CssBaseline>
+    </MuiThemeProvider>
+  </React.StrictMode>,
+  document.getElementById('root')
 );
 
 serviceWorker.register();
