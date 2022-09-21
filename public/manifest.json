@@ -8,19 +8,13 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo.png",
-      "type": "image/png",
-      "sizes": "144x144",
-      "purpose": "any maskable"
-    },
-    {
       "src": "logo-120x120.png",
       "type": "image/png",
       "sizes": "120x120",
       "purpose": "any"
     },
     {
-      "src": "logo.png",
+      "src": "logo-144x144.png",
       "type": "image/png",
       "sizes": "144x144",
       "purpose": "any maskable"
