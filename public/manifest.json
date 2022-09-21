@@ -2,16 +2,35 @@
   "short_name": "Spoons.Cheap",
   "name": "Spoons.Cheap",
   "icons": [
-      {
-          "src": "favicon.ico",
-          "sizes": "64x64",
-          "type": "image/x-icon"
-      },
-      {
-          "src": "logo.png",
-          "type": "image/png",
-          "sizes": "144x144"
-      }
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "144x144",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo-120x120.png",
+      "type": "image/png",
+      "sizes": "120x120",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "144x144",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo-180x180.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any maskable"
+    }
   ],
   "start_url": ".",
   "display": "standalone",

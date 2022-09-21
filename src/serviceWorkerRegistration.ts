@@ -1,8 +1,6 @@
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
-import { FixMeLater } from './FixMeLater';
-
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
 // will only see deployed updates on subsequent visits to a page, after all the
@@ -22,11 +20,14 @@ const isLocalhost = Boolean(
     )
 );
 
-export function register(config?: FixMeLater) {
+type Config = {
+  onSuccess?: (registration: ServiceWorkerRegistration) => void;
+  onUpdate?: (registration: ServiceWorkerRegistration) => void;
+};
+
+export function register(config?: Config) {
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
@@ -58,7 +59,7 @@ export function register(config?: FixMeLater) {
   }
 }
 
-function registerValidSW(swUrl: FixMeLater, config: FixMeLater) {
+function registerValidSW(swUrl: string, config?: Config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
@@ -102,7 +103,7 @@ function registerValidSW(swUrl: FixMeLater, config: FixMeLater) {
     });
 }
 
-function checkValidServiceWorker(swUrl: FixMeLater, config: FixMeLater) {
+function checkValidServiceWorker(swUrl: string, config?: Config) {
   // Check if the service worker can be found. If it can't reload the page.
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
