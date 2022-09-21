@@ -8,19 +8,19 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo-120x120.png",
+      "src": "icon-120x120.png",
       "type": "image/png",
       "sizes": "120x120",
       "purpose": "any"
     },
     {
-      "src": "logo-144x144.png",
+      "src": "icon-144x144.png",
       "type": "image/png",
       "sizes": "144x144",
       "purpose": "any maskable"
     },
     {
-      "src": "logo-180x180.png",
+      "src": "icon-180x180.png",
       "type": "image/png",
       "sizes": "180x180",
       "purpose": "any maskable"
