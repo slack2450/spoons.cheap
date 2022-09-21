@@ -6,7 +6,7 @@ const axiosInstance = axios.create({
   baseURL: 'https://api.spoons.cheap',
 });
 export async function getHistoricalDrinks(
-  venueId: string
+  venueId: number
 ): Promise<DrinksOnDate[]> {
   const res = await axiosInstance.get(`/v1/price/${venueId}`);
 

@@ -1,20 +1,26 @@
-import { styled } from '@material-ui/core';
-import { motion } from 'framer-motion';
+import { styled, useTheme } from '@mui/material';
+import { HTMLMotionProps, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import Chart from 'react-apexcharts';
-import { FixMeLater } from './FixMeLater';
+import { Drink, DrinksOnDate } from './types/Drink';
+import { Pub } from './types/Pub';
+import { Ranking } from './types/Ranking';
 
-const PubContext = React.createContext<FixMeLater>(undefined);
-const HistoricalPriceContext = React.createContext<FixMeLater>(undefined);
+const PubContext = React.createContext<Pub | null>(null);
+const HistoricalPriceContext = React.createContext<DrinksOnDate[]>([]);
 
-const Root = styled((props) => (
-  <motion.div
-    animate={{ opacity: [0, 1] }}
-    transition={{ delay: 0.5 }}
-    {...props}
-  />
-))((props) => ({
+function RootBase(props: HTMLMotionProps<'div'>) {
+  return (
+    <motion.div
+      animate={{ opacity: [0, 1] }}
+      transition={{ delay: 0.5 }}
+      {...props}
+    />
+  );
+}
+
+const Root = styled(RootBase)((props) => ({
   opacity: 0,
   width: '100%',
   display: 'grid',
@@ -30,31 +36,31 @@ const Root = styled((props) => (
   marginBottom: '24px',
 }));
 
-function Result({ drink }: { drink: FixMeLater }) {
-  const { venueId }: { venueId: FixMeLater } = React.useContext(PubContext);
+function Result({ drink }: { drink: Drink }) {
+  const pub = React.useContext(PubContext);
 
-  const { historicalData } = React.useContext(HistoricalPriceContext);
+  const historicalData = React.useContext(HistoricalPriceContext);
 
-  const [priceData, setPriceData] = useState([]);
-  const [detailedInfo, setDetailedInfo] = useState(false);
+  const [priceData, setPriceData] = useState<
+    { timestamp: number; price: number }[]
+  >([]);
+  const [detailedInfo, setDetailedInfo] = useState<boolean>(false);
 
   async function click() {
     setDetailedInfo(!detailedInfo);
-    if (venueId) {
-      const historicalPricing = historicalData.map(
-        (drinksOnDate: FixMeLater) => {
-          const mapDrink = drinksOnDate.drinks.find(
-            (d: FixMeLater) => d.productId === drink.productId
-          );
-          return {
-            timestamp: drinksOnDate.date,
-            price: mapDrink ? mapDrink.price : 0,
-          };
-        }
-      );
+    if (pub) {
+      const historicalPricing = historicalData.map((drinksOnDate) => {
+        const mapDrink = drinksOnDate.drinks.find(
+          (d) => d.productId === drink.productId
+        );
+        return {
+          timestamp: drinksOnDate.date,
+          price: mapDrink ? mapDrink.price : 0,
+        };
+      });
 
       const filteredData = historicalPricing.filter(
-        (d: FixMeLater) => d.price !== 0 && typeof d.price !== 'undefined'
+        (d) => d.price !== 0 && typeof d.price !== 'undefined'
       );
       setPriceData(filteredData);
     }
@@ -63,7 +69,7 @@ function Result({ drink }: { drink: FixMeLater }) {
   useEffect(() => {
     setPriceData([]);
     setDetailedInfo(false);
-  }, [venueId]);
+  }, [pub]);
 
   return (
     <motion.div
@@ -99,15 +105,6 @@ function Result({ drink }: { drink: FixMeLater }) {
         style={{
           textAlign: 'center',
           margin: 0,
-          display: detailedInfo ? 'block' : 'none',
-        }}
-      >
-        {drink.description}
-      </p>
-      <p
-        style={{
-          textAlign: 'center',
-          margin: 0,
         }}
       >
         {`£${drink.ppu.toFixed(3)} per unit`}
@@ -119,16 +116,9 @@ function Result({ drink }: { drink: FixMeLater }) {
           display: detailedInfo ? 'block' : 'none',
         }}
       >
-        {drink.displayPrice}
-      </p>
-      <p
-        style={{
-          textAlign: 'center',
-          margin: 0,
-          display: detailedInfo ? 'block' : 'none',
-        }}
-      >
-        {`${drink.units} ${drink.units === 1 ? 'unit' : 'units'}`}
+        {`£${drink.price.toFixed(2)} / ${drink.units} ${
+          drink.units === 1 ? 'unit' : 'units'
+        }`}
       </p>
       <PriceChart data={priceData} display={detailedInfo} />
     </motion.div>
@@ -139,28 +129,24 @@ function PubRanking({
   pub,
   rankings,
 }: {
-  pub: FixMeLater;
-  rankings: FixMeLater;
+  pub: Pub | null;
+  rankings: Ranking[];
 }) {
   if (!pub) return <></>;
 
-  let mostRecentRankingDate = 0;
-  let mostRecentRanking: FixMeLater = { pubs: [] };
+  let mostRecentRanking: Ranking = { pubs: [], date: 0 };
   for (const ranking of rankings) {
-    if (ranking.date > mostRecentRankingDate) {
-      mostRecentRankingDate = ranking.date;
+    if (ranking.date > mostRecentRanking.date) {
       mostRecentRanking = ranking;
     }
   }
 
   const mostRecentRank = mostRecentRanking.pubs.find(
-    (p: FixMeLater) => p.venueId === pub.venueId
+    (p) => p.venueId === pub.venueId
   )?.rank;
-  const highestRank = Math.max(
-    ...mostRecentRanking.pubs.map((p: FixMeLater) => p.rank)
-  );
+  const highestRank = Math.max(...mostRecentRanking.pubs.map((p) => p.rank));
 
-  const options: FixMeLater = {
+  const options: ApexCharts.ApexOptions = {
     chart: {
       type: 'area',
       zoom: {
@@ -187,21 +173,26 @@ function PubRanking({
     },
     tooltip: {
       y: {
-        formatter: (p: FixMeLater) => `${p}`,
+        formatter: (p) => `${p}`,
       },
     },
   };
 
+  const pubRanking: [number, number | undefined][] = rankings.map((ranking) => [
+    ranking.date,
+    ranking.pubs.find((p) => p.venueId === pub.venueId)?.rank,
+  ]);
+
+  const filteredPubRanking: [number, number][] = pubRanking.filter(
+    (point) => typeof point[1] !== 'undefined'
+  ) as [number, number][];
+
+  const sortedPubRanking = filteredPubRanking.sort((a, b) => a[0] - b[0]);
+
   const series = [
     {
       name: 'Ranking',
-      data: rankings
-        .map((ranking: FixMeLater) => [
-          ranking.date,
-          ranking.pubs.find((p: FixMeLater) => p.venueId === pub.venueId)?.rank,
-        ])
-        .filter((point: FixMeLater) => typeof point[1] !== 'undefined')
-        .sort((a: FixMeLater, b: FixMeLater) => a[0] - b[0]),
+      data: sortedPubRanking,
     },
   ];
 
@@ -267,31 +258,29 @@ function PubRanking({
 }
 
 export default function SearchResults({
-  drinks: historicalDrinks,
+  historicalDrinks,
   pub,
   rankings,
 }: {
-  drinks: FixMeLater;
-  pub: FixMeLater;
-  rankings: FixMeLater;
+  historicalDrinks: DrinksOnDate[];
+  pub: Pub | null;
+  rankings: Ranking[];
 }) {
-  let todaysDrinks = { drinks: [] };
-  let mostRecent = 0;
+  let todaysDrinks: DrinksOnDate = { drinks: [], date: 0 };
   for (const drinkPrices of historicalDrinks) {
-    if (drinkPrices.date > mostRecent) {
+    if (drinkPrices.date > todaysDrinks.date) {
       todaysDrinks = drinkPrices;
-      mostRecent = drinkPrices.date;
     }
   }
 
+  const theme = useTheme();
+
   return (
-    <PubContext.Provider value={pub ? pub : { venueId: 'none' }}>
-      <HistoricalPriceContext.Provider
-        value={{ historicalData: historicalDrinks }}
-      >
+    <PubContext.Provider value={pub}>
+      <HistoricalPriceContext.Provider value={historicalDrinks}>
         <PubRanking pub={pub} rankings={rankings} />
-        <Root>
-          {todaysDrinks.drinks.map((drink: FixMeLater) => {
+        <Root theme={theme}>
+          {todaysDrinks.drinks.map((drink) => {
             return <Result key={drink.productId} drink={drink} />;
           })}
         </Root>
@@ -304,10 +293,10 @@ function PriceChart({
   data,
   display,
 }: {
-  data: FixMeLater;
-  display: FixMeLater;
+  data: { timestamp: number; price: number }[];
+  display: boolean;
 }) {
-  const [options, setOptions] = useState<FixMeLater>({
+  const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       type: 'area',
       zoom: {
@@ -327,17 +316,17 @@ function PriceChart({
       type: 'datetime',
     },
     yaxis: {
-      min: Math.floor(data.map((point: FixMeLater) => point.price).sort()[0]),
+      min: Math.floor(data.map((point) => point.price).sort()[0]),
       tickAmount: 5,
     },
     tooltip: {
       y: {
-        formatter: (p: FixMeLater) => `£${p.toFixed(2)}`,
+        formatter: (p) => `£${p.toFixed(2)}`,
       },
     },
   });
 
-  const [series, setSeries] = useState([
+  const [series, setSeries] = useState<ApexAxisChartSeries>([
     {
       name: 'Price',
       data: [],
@@ -365,12 +354,12 @@ function PriceChart({
         type: 'datetime',
       },
       yaxis: {
-        min: Math.floor(data.map((point: FixMeLater) => point.price).sort()[0]),
+        min: Math.floor(data.map((point) => point.price).sort()[0]),
         tickAmount: 5,
       },
       tooltip: {
         y: {
-          formatter: (p: FixMeLater) => `£${p.toFixed(2)}`,
+          formatter: (p) => `£${p.toFixed(2)}`,
         },
       },
     });
@@ -379,8 +368,8 @@ function PriceChart({
       {
         name: 'Price',
         data: data
-          .map((point: FixMeLater) => [point.timestamp, point.price])
-          .sort((a: FixMeLater, b: FixMeLater) => a[0] - b[0]),
+          .map((point) => [point.timestamp, point.price] as [number, number])
+          .sort((a, b) => a[0] - b[0]),
       },
     ]);
   }, [data]);

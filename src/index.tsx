@@ -1,4 +1,4 @@
-import { createTheme, CssBaseline, MuiThemeProvider } from '@material-ui/core';
+import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -15,11 +15,11 @@ axios.defaults.baseURL = 'https://static.wsstack.nn4maws.net';
 
 ReactDOM.render(
   <React.StrictMode>
-    <MuiThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline>
         <App />
       </CssBaseline>
-    </MuiThemeProvider>
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

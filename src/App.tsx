@@ -1,10 +1,9 @@
-import { Container, Typography, styled } from '@material-ui/core';
+import { Container, Typography, styled } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import SearchResults from './SearchResults';
 
 import React from 'react';
-import { FixMeLater } from './FixMeLater';
 import { Search } from './Search';
 import { getOpenPubs, getTodaysDrinks } from './lib/wetherspoons';
 import { Pub } from './types/Pub';
@@ -28,7 +27,7 @@ function App() {
   const [pubs, setPubs] = useState<Pub[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
 
-  const [pub, setPub] = useState<Pub | undefined>(undefined);
+  const [pub, setPub] = useState<Pub | null>(null);
 
   const [drinks, setDrinks] = useState<DrinksOnDate[]>([]);
 
@@ -86,11 +85,15 @@ function App() {
         </Typography>
         <Search
           options={pubs}
-          onChange={(_event: FixMeLater, value: FixMeLater) => {
+          onChange={(_event, value) => {
             setPub(value);
           }}
         />
-        <SearchResults drinks={drinks} pub={pub} rankings={rankings} />
+        <SearchResults
+          historicalDrinks={drinks}
+          pub={pub}
+          rankings={rankings}
+        />
       </SearchContainer>
     </Root>
   );

@@ -7,7 +7,8 @@ body:before {
   width: 100%;
   height: 100%;
   z-index: -10;
-  background: linear-gradient(135deg, #d53369, #cbad6d);
+  /*background: linear-gradient(135deg, #d53369, #cbad6d);*/ /* Old background color */
+  background: linear-gradient(135deg, #00dbde, #fc00ff);
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;

@@ -6,7 +6,7 @@ const axiosInstance = axios.create({
   baseURL: 'https://static.wsstack.nn4maws.net',
 });
 
-export async function getTodaysDrinks(venueId: string): Promise<Drink[]> {
+export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
   const res = await axiosInstance.get(`/content/v3/menus/${venueId}.json`);
 
   let drinksMenu;
