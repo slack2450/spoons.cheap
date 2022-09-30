@@ -23,7 +23,7 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
     for (const productGroup of drinkCategory.productGroups) {
       for (const product of productGroup.products) {
         const beerMatches = product.description.match(/(...) unit/);
-        const wineMatches = product.description.match(/(\d?\d?\.?\d%) ABV/);
+        const wineMatches = product.description.match(/(\d?\d?\.?\d?\d%) ABV/);
 
         let shouldContinue = false;
         for (const existing of drinks) {
