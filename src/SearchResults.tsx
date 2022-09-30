@@ -265,7 +265,7 @@ export default function SearchResults({
   historicalDrinks: DrinksOnDate[];
   pub: Pub | null;
   rankings: Ranking[];
-}) {
+}): JSX.Element {
   let todaysDrinks: DrinksOnDate = { drinks: [], date: 0 };
   for (const drinkPrices of historicalDrinks) {
     if (drinkPrices.date > todaysDrinks.date) {

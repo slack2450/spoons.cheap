@@ -22,7 +22,7 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
   for (const drinkCategory of drinksMenu.subMenu) {
     for (const productGroup of drinkCategory.productGroups) {
       for (const product of productGroup.products) {
-        const beerMatches = product.description.match(/(...) unit/);
+        const beerMatches = product.description.match(/(\d?\.?\d?\d) unit/);
         const wineMatches = product.description.match(/(\d?\d?\.?\d?\d%) ABV/);
 
         let shouldContinue = false;
@@ -31,6 +31,13 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
         }
 
         if (shouldContinue) continue;
+
+
+        if (product.productId == 10000143825) {
+          console.log(product);
+          console.log(beerMatches);
+          console.log(wineMatches)
+        }
 
         if (beerMatches && beerMatches.length > 0) {
 
@@ -52,7 +59,13 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
 
           const percentage = parseFloat(wineMatches[1]);
 
+          if (product.productId == 10000143825)
+            console.log(descriptionVol);
+
           if (descriptionVol && descriptionVol.length > 0) {
+
+            if (product.productId == 10000143825)
+              console.log(descriptionVol);
 
             const units = (percentage * parseFloat(descriptionVol[1])) / 1000;
 
