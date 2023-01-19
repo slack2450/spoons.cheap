@@ -3,11 +3,11 @@ import { Drink } from '../types/Drink';
 import { Pub } from '../types/Pub';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://static.wsstack.nn4maws.net',
+  baseURL: 'https://api.spoons.cheap/v1/proxy',
 });
 
 export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
-  const res = await axiosInstance.get(`/content/v3/menus/${venueId}.json`);
+  const res = await axiosInstance.get(`/content/v8/menus/${venueId}.json`);
 
   let drinksMenu;
   for (const menu of res.data.menus) {
