@@ -316,7 +316,7 @@ function PriceChart({
       type: 'datetime',
     },
     yaxis: {
-      min: Math.floor(data.map((point) => point.price).sort()[0]),
+      min: Math.floor(data.map((point) => point.price).sort((a, b) => a - b)[0]),
       tickAmount: 5,
     },
     tooltip: {
@@ -354,7 +354,7 @@ function PriceChart({
         type: 'datetime',
       },
       yaxis: {
-        min: Math.floor(data.map((point) => point.price).sort()[0]),
+        min: Math.floor(data.map((point) => point.price).sort((a, b) => a - b)[0]),
         tickAmount: 5,
       },
       tooltip: {
@@ -379,8 +379,8 @@ function PriceChart({
       style={{
         display: display ? 'block' : 'none',
       }}
-    >
-      <Chart options={options} series={series} type="area" />
+    >{ display && <Chart options={options} series={series} type="area" /> }
+      
     </div>
   );
 }

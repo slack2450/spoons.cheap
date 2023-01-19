@@ -32,49 +32,56 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
 
         if (shouldContinue) continue;
 
-
-        if (product.productId == 10000143825) {
-          console.log(product);
-          console.log(beerMatches);
-          console.log(wineMatches)
-        }
-
         if (beerMatches && beerMatches.length > 0) {
 
 
           const units: number = parseFloat(beerMatches[1]);
 
+          const price = parseFloat(product.displayPrice.slice(1));
+
           const drink: Drink = {
             name: product.displayName,
             productId: product.productId,
-            price: product.priceValue,
+            price: price,
             units,
-            ppu: product.priceValue / units,
+            ppu: price / units,
           };
 
           drinks.push(drink);
         } else if (wineMatches && wineMatches.length > 0) {
 
-          const descriptionVol = product.description.match(/(\d?\d\d)ml/);
+          let volume = 0;
+          let price = 0;
+          for(const portion of product.portions) {
+            const match = portion.name.match(/(\d?\d\d)ml/);
+            if(!match) continue;
+            const portionSize = parseFloat(match[1]);
+            if(portionSize > volume) {
+              volume = portionSize;
+              price = portion.price;
+            }
+          }
+
+          if(volume == 0) {
+            const match = product.description.match(/(\d?\d\d)ml/);
+            if(match) {
+              volume = parseFloat(match[1]);
+              price = parseFloat(product.displayPrice.slice(1));
+            }
+          }
 
           const percentage = parseFloat(wineMatches[1]);
 
-          if (product.productId == 10000143825)
-            console.log(descriptionVol);
+          if (volume > 0) {
 
-          if (descriptionVol && descriptionVol.length > 0) {
-
-            if (product.productId == 10000143825)
-              console.log(descriptionVol);
-
-            const units = (percentage * parseFloat(descriptionVol[1])) / 1000;
+            const units = (percentage * volume) / 1000;
 
             const drink: Drink = {
               name: product.displayName,
               productId: product.productId,
-              price: product.priceValue,
+              price: price,
               units,
-              ppu: product.priceValue / units,
+              ppu: price / units,
             }
 
             drinks.push(drink);
@@ -82,14 +89,21 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
             if (product.defaultPortionName) {
               const volume = product.defaultPortionName.match(/(\d?\d\d)ml/);
 
+              if(!volume) {
+                console.log(product);
+                continue;
+              }
+
               const units = (percentage * parseFloat(volume[1])) / 1000;
+
+              const price = parseFloat(product.displayPrice.slice(1));
 
               const drink: Drink = {
                 name: product.displayName,
                 productId: product.productId,
-                price: product.priceValue,
+                price: price,
                 units,
-                ppu: product.priceValue / units,
+                ppu: price / units,
               }
 
               drinks.push(drink);
