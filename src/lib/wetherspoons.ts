@@ -10,10 +10,12 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
   const res = await axiosInstance.get(`/content/v8/menus/${venueId}.json`);
 
   let drinksMenu;
+  let drinksMenuLength = 0;
+  // Dirty hack for Student Deals
   for (const menu of res.data.menus) {
-    if (menu.name === 'Drinks') {
+    if (menu.name === 'Drinks' && menu.subMenu.length > drinksMenuLength) {
       drinksMenu = menu;
-      break;
+      drinksMenuLength = menu.subMenu.length;
     }
   }
 
