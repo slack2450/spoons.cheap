@@ -31,11 +31,11 @@ export function Search(props: SearchProps): JSX.Element {
       onChange={props.onChange}
       fullWidth
       options={props.options}
-      getOptionLabel={(option: Pub) => `${option.name}, ${option.town}`}
+      getOptionLabel={(option: Pub) => `${option.name}, ${option.address.town || option.address.county || option.address.country.name}`}
       renderInput={(params: TextFieldProps) => (
         <StyledAutoCompleteInput {...params} className={props.className} />
       )}
-      isOptionEqualToValue={(option, value) => option.venueId === value.venueId}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
     />
   );
 }

@@ -107,7 +107,7 @@ function Result({ drink }: { drink: Drink }) {
           margin: 0,
         }}
       >
-        {`£${drink.ppu.toFixed(3)} per unit`}
+        {`£${drink.ppu?.toFixed(3)} per unit`}
       </p>
       <p
         style={{
@@ -116,7 +116,7 @@ function Result({ drink }: { drink: Drink }) {
           display: detailedInfo ? 'block' : 'none',
         }}
       >
-        {`£${drink.price.toFixed(2)} / ${drink.units} ${
+        {`£${drink.price?.toFixed(2)} / ${drink.units} ${
           drink.units === 1 ? 'unit' : 'units'
         }`}
       </p>
@@ -142,7 +142,7 @@ function PubRanking({
   }
 
   const mostRecentRank = mostRecentRanking.pubs.find(
-    (p) => p.venueId === pub.venueId
+    (p) => p.venueId === pub.id
   )?.rank;
   const highestRank = Math.max(...mostRecentRanking.pubs.map((p) => p.rank));
 
@@ -180,7 +180,7 @@ function PubRanking({
 
   const pubRanking: [number, number | undefined][] = rankings.map((ranking) => [
     ranking.date,
-    ranking.pubs.find((p) => p.venueId === pub.venueId)?.rank,
+    ranking.pubs.find((p) => p.venueId === pub.id)?.rank,
   ]);
 
   const filteredPubRanking: [number, number][] = pubRanking.filter(
@@ -227,6 +227,13 @@ function PubRanking({
       >
         ✨ Rankings BETA ✨
       </p>
+      <p>
+        Out of order whilst we update D:
+      </p>
+      <>{
+      /*
+        TODO: Patch Rankings
+
       <p
         style={{
           textAlign: 'center',
@@ -253,6 +260,8 @@ function PubRanking({
       >
         <Chart options={options} series={series} type="area" />
       </div>
+      */
+      }</>
     </motion.div>
   );
 }

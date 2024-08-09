@@ -1,7 +1,20 @@
 export interface Pub {
-  venueId: number;
+  id: number;
   name: string;
-  town: string;
-  pubIsClosed: boolean;
-  pubIsTempClosed: boolean;
+  address: Address;
+  salesArea: SalesArea[];
+}
+
+interface Address {
+  town: string,
+  county: string;
+  country: Country;
+}
+
+interface Country {
+  name: string;
+}
+
+interface SalesArea {
+  id: number;
 }

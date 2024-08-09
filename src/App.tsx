@@ -36,7 +36,7 @@ function App() {
 
     if (!pub) return;
     (async function () {
-      const todaysDrinks = await getTodaysDrinks(pub.venueId);
+      const todaysDrinks = await getTodaysDrinks(pub.id, pub.salesArea[0].id);
       const todaysDate = Date.now();
 
       setDrinks((drinks) => {
@@ -49,7 +49,7 @@ function App() {
     })();
 
     (async () => {
-      const historical = await getHistoricalDrinks(pub.venueId);
+      const historical = await getHistoricalDrinks(pub.id);
 
       setDrinks((drinks) => {
         drinks.push(...historical);
@@ -89,6 +89,33 @@ function App() {
             setPub(value);
           }}
         />
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#dcdcdc',
+            borderRadius: '5px',
+            display: 'grid',
+            placeItems: 'center',
+            padding: '10px',
+            boxShadow: '5px 5px 5px rgba(0,0,0,0.4)',
+            cursor: 'pointer',
+            textAlign: 'center'
+          }}
+        >
+        <p style={{
+          fontWeight: 'bold',
+          marginBottom: 0,
+        }}>
+        ⚠️ The Wetherspoons API just had a major refactor! ⚠️
+        </p>
+        <p style={{
+          marginTop: 5
+        }}
+        >
+        🚧 Please bear with me as I rebuild the app 🚧
+        </p>
+        </div>
         <SearchResults
           historicalDrinks={drinks}
           pub={pub}

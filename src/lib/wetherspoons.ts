@@ -6,129 +6,172 @@ const axiosInstance = axios.create({
   baseURL: 'https://api.spoons.cheap/v1/proxy',
 });
 
-export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
-  const res = await axiosInstance.get(`/content/v8/menus/${venueId}.json`);
+export async function getTodaysDrinks(venueId: number, salesAreaId: number): Promise<Drink[]> {
 
-  let drinksMenu;
-  let drinksMenuLength = 0;
-  // Dirty hack for Student Deals
-  for (const menu of res.data.menus) {
-    if (menu.name === 'Drinks' && menu.subMenu.length > drinksMenuLength) {
-      drinksMenu = menu;
-      drinksMenuLength = menu.subMenu.length;
+  const getMenusForm = new FormData();
+  getMenusForm.append(
+    "request",
+    JSON.stringify(
+      {
+        "request":
+        {
+          "platform": "nintendo-ds",
+          "bundleIdentifier": "com.stella.enjoyers",
+          "userDeviceIdentifier": "i-love-drinking-beer",
+          "version": "1.0.0",
+          "method": "getMenus",
+          "siteId": venueId,
+          "salesAreaId": salesAreaId,
+        }
+      }
+    )
+  );
+
+  const menusRes = await fetch("https://zc.ca.jdw-apps.net/api/iorder", {
+    "headers": {
+      "x-api-key": "SH0obBv23pj7lUrg5SESDdJO8fS9p0ND",
+    },
+    body: getMenusForm,
+    "method": "POST"
+  });
+
+  const menusData = await menusRes.json();
+
+  let menuId;
+  for (const menu of menusData.menus) {
+    if (menu.name === 'Drinks') {
+      menuId = menu.id;
+      break;
     }
   }
 
+  const requestData = new FormData();
+  requestData.append(
+    "request",
+    JSON.stringify(
+      {
+        "request":
+        {
+          "platform": "nintendo-ds",
+          "bundleIdentifier": "com.stella.enjoyers",
+          "userDeviceIdentifier": "i-love-drinking-beer",
+          "version": "1.0.0",
+          "method": "getMenuPages",
+          "siteId": venueId,
+          "menuId": menuId,
+          "salesAreaId": salesAreaId
+        }
+      }
+    )
+  );
+
+  const response = await fetch("https://zc.ca.jdw-apps.net/api/iorder", {
+    "headers": {
+      "x-api-key": "SH0obBv23pj7lUrg5SESDdJO8fS9p0ND",
+    },
+    body: requestData,
+    "method": "POST"
+  });
+
+  const res = await response.json()
+
   const drinks: Drink[] = [];
 
-  for (const drinkCategory of drinksMenu.subMenu) {
-    for (const productGroup of drinkCategory.productGroups) {
-      for (const product of productGroup.products) {
-        const beerMatches = product.description.match(/(\d?\.?\d?\d) unit/);
-        const wineMatches = product.description.match(/(\d?\d?\.?\d?\d%) ABV/);
+  for (const product of res.aztec.products) {
+    console.log(product.eposName);
 
-        let shouldContinue = false;
-        for (const existing of drinks) {
-          if (existing.productId === product.productId) shouldContinue = true;
+    const beerMatches = product.displayRecords?.[0]?.description.match(/(\d?\.?\d?\d) unit/);
+    const wineMatches = product.displayRecords?.[0]?.description.match(/(\d?\d?\.?\d?\d%) ABV/);
+
+    if (beerMatches && beerMatches.length > 0) {
+
+      const units: number = parseFloat(beerMatches[1]);
+
+      if (product.portions.length == 0) continue;
+
+      const price = product.portions[0]?.price;
+
+      const drink: Drink = {
+        name: product.eposName,
+        productId: product.id,
+        price: price,
+        units,
+        ppu: price / units,
+      };
+
+      drinks.push(drink);
+    } else if (wineMatches && wineMatches.length > 0) {
+
+      let volume = 0;
+      let price = 0;
+      for (const portion of product.portions) {
+        const match = portion.name.match(/(\d?\d\d)ml/);
+        if (!match) continue;
+        const portionSize = parseFloat(match[1]);
+        if (portionSize > volume) {
+          volume = portionSize;
+          price = portion.price;
+        }
+      }
+
+      const percentage = parseFloat(wineMatches[1]);
+
+      if (volume > 0) {
+
+        const units = (percentage * volume) / 1000;
+
+        const drink: Drink = {
+          name: product.eposName,
+          productId: product.id,
+          price: price,
+          units,
+          ppu: price / units,
         }
 
-        if (shouldContinue) continue;
+        drinks.push(drink);
+      } else {
 
-        if (beerMatches && beerMatches.length > 0) {
+        if (product.defaultPortionName) {
+          const volume = product.defaultPortionName.match(/(\d?\d\d)ml/);
 
+          if (!volume) {
+            console.log(product);
+            continue;
+          }
 
-          const units: number = parseFloat(beerMatches[1]);
+          const units = (percentage * parseFloat(volume[1])) / 1000;
 
           const price = parseFloat(product.displayPrice.slice(1));
 
           const drink: Drink = {
-            name: product.displayName,
-            productId: product.productId,
+            name: product.eposName,
+            productId: product.id,
             price: price,
             units,
             ppu: price / units,
-          };
+          }
 
           drinks.push(drink);
-        } else if (wineMatches && wineMatches.length > 0) {
+        } else {
+          const volume = 175;
 
-          let volume = 0;
-          let price = 0;
-          for(const portion of product.portions) {
-            const match = portion.name.match(/(\d?\d\d)ml/);
-            if(!match) continue;
-            const portionSize = parseFloat(match[1]);
-            if(portionSize > volume) {
-              volume = portionSize;
-              price = portion.price;
-            }
+          const units = (percentage * volume) / 1000;
+
+          const drink: Drink = {
+            name: product.eposName,
+            productId: product.id,
+            price: product.priceValue,
+            units,
+            ppu: product.priceValue / units,
           }
 
-          if(volume == 0) {
-            const match = product.description.match(/(\d?\d\d)ml/);
-            if(match) {
-              volume = parseFloat(match[1]);
-              price = parseFloat(product.displayPrice.slice(1));
-            }
-          }
-
-          const percentage = parseFloat(wineMatches[1]);
-
-          if (volume > 0) {
-
-            const units = (percentage * volume) / 1000;
-
-            const drink: Drink = {
-              name: product.displayName,
-              productId: product.productId,
-              price: price,
-              units,
-              ppu: price / units,
-            }
-
-            drinks.push(drink);
-          } else {
-            if (product.defaultPortionName) {
-              const volume = product.defaultPortionName.match(/(\d?\d\d)ml/);
-
-              if(!volume) {
-                console.log(product);
-                continue;
-              }
-
-              const units = (percentage * parseFloat(volume[1])) / 1000;
-
-              const price = parseFloat(product.displayPrice.slice(1));
-
-              const drink: Drink = {
-                name: product.displayName,
-                productId: product.productId,
-                price: price,
-                units,
-                ppu: price / units,
-              }
-
-              drinks.push(drink);
-            } else {
-              const volume = 175;
-
-              const units = (percentage * volume) / 1000;
-
-              const drink: Drink = {
-                name: product.displayName,
-                productId: product.productId,
-                price: product.priceValue,
-                units,
-                ppu: product.priceValue / units,
-              }
-
-              drinks.push(drink);
-            }
-          }
+          drinks.push(drink);
         }
       }
     }
   }
+
+  console.log(drinks);
 
   drinks.sort((a, b) => {
     return a.ppu - b.ppu;
@@ -139,14 +182,38 @@ export async function getTodaysDrinks(venueId: number): Promise<Drink[]> {
 
 export async function getOpenPubs(): Promise<Pub[]> {
   const pubs: Pub[] = [];
-  const res = await axiosInstance.get('/v1/venues/en_gb/venues.json');
-  for (let i = 0; i < res.data.venues.length; i++) {
-    const venue = res.data.venues[i];
-    if (venue.pubIsClosed || venue.pubIsTempClosed) {
-      res.data.venues.splice(venue, 1);
-      continue;
+
+  const requestData = new FormData();
+  requestData.append(
+    "request",
+    JSON.stringify(
+      {
+        "request":
+        {
+          "platform": "nintendo-ds",
+          "bundleIdentifier": "com.stella.enjoyers",
+          "userDeviceIdentifier": "i-love-drinking-beer",
+          "version": "1.0.0",
+          "method": "venues",
+        }
+      }
+    )
+  );
+
+  const res = await fetch("https://zc.ca.jdw-apps.net/api/iorder", {
+    "headers": {
+      "x-api-key": "SH0obBv23pj7lUrg5SESDdJO8fS9p0ND",
+    },
+    body: requestData,
+    "method": "POST"
+  });
+
+  const resBody = await res.json();
+
+  for (const venue of resBody.venues) {
+    if (venue?.salesArea?.[0]?.canPlaceOrder) {
+      pubs.push(venue)
     }
-    pubs.push(venue);
   }
   return pubs;
 }
