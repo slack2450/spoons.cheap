@@ -141,12 +141,12 @@ function PubRanking({
     }
   }
 
-  const mostRecentRank = mostRecentRanking.pubs.find(
+  /*const mostRecentRank = mostRecentRanking.pubs.find(
     (p) => p.venueId === pub.id
   )?.rank;
-  const highestRank = Math.max(...mostRecentRanking.pubs.map((p) => p.rank));
+  const highestRank = Math.max(...mostRecentRanking.pubs.map((p) => p.rank));*/
 
-  const options: ApexCharts.ApexOptions = {
+  /*const options: ApexCharts.ApexOptions = {
     chart: {
       type: 'area',
       zoom: {
@@ -176,25 +176,25 @@ function PubRanking({
         formatter: (p) => `${p}`,
       },
     },
-  };
+  };*/
 
-  const pubRanking: [number, number | undefined][] = rankings.map((ranking) => [
+  /*const pubRanking: [number, number | undefined][] = rankings.map((ranking) => [
     ranking.date,
     ranking.pubs.find((p) => p.venueId === pub.id)?.rank,
-  ]);
+  ]);*/
 
-  const filteredPubRanking: [number, number][] = pubRanking.filter(
+  /*const filteredPubRanking: [number, number][] = pubRanking.filter(
     (point) => typeof point[1] !== 'undefined'
-  ) as [number, number][];
+  ) as [number, number][];*/
 
-  const sortedPubRanking = filteredPubRanking.sort((a, b) => a[0] - b[0]);
+  //const sortedPubRanking = filteredPubRanking.sort((a, b) => a[0] - b[0]);
 
-  const series = [
+  /*const series = [
     {
       name: 'Ranking',
       data: sortedPubRanking,
     },
-  ];
+  ];*/
 
   return (
     <motion.div

@@ -6,7 +6,7 @@ import { Ranking } from '../types/Ranking';
   baseURL: 'https://api.spoons.cheap',
 });*/
 export async function getHistoricalDrinks(
-  venueId: number
+  _venueId: number
 ): Promise<DrinksOnDate[]> {
   throw Error('TODO')
   /*const res = await axiosInstance.get(`/v1/price/${venueId}`);

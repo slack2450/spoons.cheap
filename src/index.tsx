@@ -4,14 +4,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 
-import axios from 'axios';
-
-//import { register } from './serviceWorkerRegistration';
-import * as serviceWorker from './serviceWorkerRegistration';
 
 const theme = createTheme({});
-
-axios.defaults.baseURL = 'https://static.wsstack.nn4maws.net';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -23,5 +17,3 @@ ReactDOM.render(
   </React.StrictMode>,
   document.getElementById('root')
 );
-
-serviceWorker.register();
