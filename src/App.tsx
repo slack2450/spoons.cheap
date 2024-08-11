@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 
 import SearchResults from './SearchResults';
 
-import React from 'react';
 import { Search } from './Search';
 import { getOpenPubs, getTodaysDrinks } from './lib/wetherspoons';
 import { Pub } from './types/Pub';

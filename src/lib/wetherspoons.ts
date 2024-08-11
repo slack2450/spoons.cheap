@@ -1,11 +1,5 @@
-import axios from 'axios';
 import { Drink } from '../types/Drink';
 import { Pub } from '../types/Pub';
-
-const axiosInstance = axios.create({
-  baseURL: 'https://api.spoons.cheap/v1/proxy',
-});
-
 
 interface WetherspoonRequest {
   method: string;
@@ -254,32 +248,11 @@ export async function getTodaysDrinks(venueId: number, salesAreaId: number): Pro
 export async function getOpenPubs(): Promise<Pub[]> {
   const pubs: Pub[] = [];
 
-  const requestData = new FormData();
-  requestData.append(
-    "request",
-    JSON.stringify(
-      {
-        "request":
-        {
-          "platform": "nintendo-ds",
-          "bundleIdentifier": "com.stella.enjoyers",
-          "userDeviceIdentifier": "i-love-drinking-beer",
-          "version": "1.0.0",
-          "method": "venues",
-        }
-      }
-    )
+  const resBody = await wetherspoonRequest(
+    {
+      method: 'venues'
+    }
   );
-
-  const res = await fetch("https://zc.ca.jdw-apps.net/api/iorder", {
-    "headers": {
-      "x-api-key": "SH0obBv23pj7lUrg5SESDdJO8fS9p0ND",
-    },
-    body: requestData,
-    "method": "POST"
-  });
-
-  const resBody = await res.json();
 
   for (const venue of resBody.venues) {
     if (venue?.salesArea?.[0]?.canPlaceOrder) {
