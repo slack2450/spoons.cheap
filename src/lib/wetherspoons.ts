@@ -245,8 +245,31 @@ export async function getTodaysDrinks(venueId: number, salesAreaId: number): Pro
   return drinks;
 }
 
+
+interface GlobalsVenue {
+  identifier: number | null;
+  is_closed: number;
+}
+
+interface Globals {
+  venues: GlobalsVenue[];
+}
+
 export async function getOpenPubs(): Promise<Pub[]> {
   const pubs: Pub[] = [];
+
+  // Fetch globals.json
+  const globals: Globals = await (await fetch('https://oandp-appmgr-prod.s3.eu-west-2.amazonaws.com/global.json')).json();
+
+  console.log(globals)
+
+  const open = new Set<string>();
+  for (const venue of globals.venues) {
+    console.log(venue)
+    if (venue.is_closed === 0 && venue.identifier != null) {
+      open.add(venue.identifier.toString());
+    }
+  }
 
   const resBody = await wetherspoonRequest(
     {
@@ -255,7 +278,7 @@ export async function getOpenPubs(): Promise<Pub[]> {
   );
 
   for (const venue of resBody.venues) {
-    if (venue?.salesArea?.[0]?.canPlaceOrder) {
+    if (venue?.salesArea?.[0]?.canPlaceOrder && open.has(venue.venueRef)) {
       pubs.push(venue)
     }
   }
