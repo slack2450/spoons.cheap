@@ -3,12 +3,12 @@ import { HTMLMotionProps, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import Chart from 'react-apexcharts';
-import { Drink, DrinksOnDate } from './types/Drink';
+import { Drink } from './types/Drink';
 import { Pub } from './types/Pub';
 import { Ranking } from './types/Ranking';
+import { getTodaysDrinks } from './lib/wetherspoons';
 
 const PubContext = React.createContext<Pub | null>(null);
-const HistoricalPriceContext = React.createContext<DrinksOnDate[]>([]);
 
 function RootBase(props: HTMLMotionProps<'div'>) {
   return (
@@ -39,30 +39,21 @@ const Root = styled(RootBase)((props) => ({
 function Result({ drink }: { drink: Drink }) {
   const pub = React.useContext(PubContext);
 
-  const historicalData = React.useContext(HistoricalPriceContext);
-
   const [priceData, setPriceData] = useState<
-    { timestamp: number; price: number }[]
+    { time: number; price: number }[]
   >([]);
   const [detailedInfo, setDetailedInfo] = useState<boolean>(false);
 
   async function click() {
     setDetailedInfo(!detailedInfo);
     if (pub) {
-      const historicalPricing = historicalData.map((drinksOnDate) => {
-        const mapDrink = drinksOnDate.drinks.find(
-          (d) => d.productId === drink.productId
-        );
-        return {
-          timestamp: drinksOnDate.date,
-          price: mapDrink ? mapDrink.price : 0,
-        };
-      });
 
-      const filteredData = historicalPricing.filter(
-        (d) => d.price !== 0 && typeof d.price !== 'undefined'
-      );
-      setPriceData(filteredData);
+      const res = await fetch(`https://api.spoons.cheap/v2/price/${pub.id}/${drink.productId}?range=7d`);
+      let data = await res.json();
+
+      data = data.map((item: { time: 'string', price: number }) => { return { time: new Date(item.time), price: item.price } });
+
+      setPriceData(data);
     }
   }
 
@@ -116,9 +107,8 @@ function Result({ drink }: { drink: Drink }) {
           display: detailedInfo ? 'block' : 'none',
         }}
       >
-        {`£${drink.price?.toFixed(2)} / ${drink.units} ${
-          drink.units === 1 ? 'unit' : 'units'
-        }`}
+        {`£${drink.price?.toFixed(2)} / ${drink.units.toFixed(2)} ${drink.units === 1 ? 'unit' : 'units'
+          }`}
       </p>
       <PriceChart data={priceData} display={detailedInfo} />
     </motion.div>
@@ -231,69 +221,72 @@ function PubRanking({
         Out of order whilst we update D:
       </p>
       <>{
-      /*
-        TODO: Patch Rankings
-
-      <p
-        style={{
-          textAlign: 'center',
-          fontWeight: 'bold',
-          margin: 0,
-        }}
-      >
-        {pub.name}
-      </p>
-      <p
-        style={{
-          textAlign: 'center',
-          margin: 0,
-        }}
-      >
-        {`${mostRecentRank}/${highestRank} in the UK for price on ${new Date(
-          mostRecentRanking.date
-        ).toDateString()}`}
-      </p>
-      <div
-        style={{
-          display: 'block',
-        }}
-      >
-        <Chart options={options} series={series} type="area" />
-      </div>
-      */
+        /*
+          TODO: Patch Rankings
+  
+        <p
+          style={{
+            textAlign: 'center',
+            fontWeight: 'bold',
+            margin: 0,
+          }}
+        >
+          {pub.name}
+        </p>
+        <p
+          style={{
+            textAlign: 'center',
+            margin: 0,
+          }}
+        >
+          {`${mostRecentRank}/${highestRank} in the UK for price on ${new Date(
+            mostRecentRanking.date
+          ).toDateString()}`}
+        </p>
+        <div
+          style={{
+            display: 'block',
+          }}
+        >
+          <Chart options={options} series={series} type="area" />
+        </div>
+        */
       }</>
     </motion.div>
   );
 }
 
 export default function SearchResults({
-  historicalDrinks,
   pub,
   rankings,
 }: {
-  historicalDrinks: DrinksOnDate[];
+
   pub: Pub | null;
   rankings: Ranking[];
 }): JSX.Element {
-  let todaysDrinks: DrinksOnDate = { drinks: [], date: 0 };
-  for (const drinkPrices of historicalDrinks) {
-    if (drinkPrices.date > todaysDrinks.date) {
-      todaysDrinks = drinkPrices;
-    }
-  }
+
+  const [drinks, setDrinks] = useState<Drink[]>([]);
+
+  useEffect(() => {
+    if (!pub) {
+      setDrinks([]);
+      return;
+    };
+    getTodaysDrinks(pub.id, pub.salesArea[0].id).then((drinks) => {
+      setDrinks(drinks);
+    });
+  }, [pub])
 
   const theme = useTheme();
 
   return (
     <PubContext.Provider value={pub}>
-      <HistoricalPriceContext.Provider value={historicalDrinks}>
-        <PubRanking pub={pub} rankings={rankings} />
-        <Root theme={theme}>
-          {todaysDrinks.drinks.map((drink) => {
-            return <Result key={drink.productId} drink={drink} />;
-          })}
-        </Root>
-      </HistoricalPriceContext.Provider>
+      <PubRanking pub={pub} rankings={rankings} />
+      <Root theme={theme}>
+        {drinks.map((drink) => {
+          return <Result key={drink.productId} drink={drink} />;
+        })}
+      </Root>
     </PubContext.Provider>
   );
 }
@@ -302,7 +295,7 @@ function PriceChart({
   data,
   display,
 }: {
-  data: { timestamp: number; price: number }[];
+  data: { time: number; price: number }[];
   display: boolean;
 }) {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
@@ -327,6 +320,9 @@ function PriceChart({
     yaxis: {
       min: Math.floor(data.map((point) => point.price).sort((a, b) => a - b)[0]),
       tickAmount: 5,
+      labels: {
+        formatter: (p) => `£${p.toFixed(2)}`,
+      }
     },
     tooltip: {
       y: {
@@ -365,6 +361,9 @@ function PriceChart({
       yaxis: {
         min: Math.floor(data.map((point) => point.price).sort((a, b) => a - b)[0]),
         tickAmount: 5,
+        labels: {
+          formatter: (p) => `£${p.toFixed(2)}`,
+        }
       },
       tooltip: {
         y: {
@@ -377,7 +376,7 @@ function PriceChart({
       {
         name: 'Price',
         data: data
-          .map((point) => [point.timestamp, point.price] as [number, number])
+          .map((point) => [point.time, point.price] as [number, number])
           .sort((a, b) => a[0] - b[0]),
       },
     ]);
@@ -388,8 +387,8 @@ function PriceChart({
       style={{
         display: display ? 'block' : 'none',
       }}
-    >{ display && <Chart options={options} series={series} type="area" /> }
-      
+    >{display && <Chart options={options} series={series} type="area" />}
+
     </div>
   );
 }

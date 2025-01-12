@@ -4,10 +4,9 @@ import { useEffect, useState } from 'react';
 import SearchResults from './SearchResults';
 
 import { Search } from './Search';
-import { getOpenPubs, getTodaysDrinks } from './lib/wetherspoons';
+import { getOpenPubs } from './lib/wetherspoons';
 import { Pub } from './types/Pub';
-import { DrinksOnDate } from './types/Drink';
-import { getHistoricalDrinks, getRankings } from './lib/internal';
+import { getRankings } from './lib/internal';
 import { Ranking } from './types/Ranking';
 
 const Root = styled(Container)({
@@ -27,35 +26,6 @@ function App() {
   const [rankings, setRankings] = useState<Ranking[]>([]);
 
   const [pub, setPub] = useState<Pub | null>(null);
-
-  const [drinks, setDrinks] = useState<DrinksOnDate[]>([]);
-
-  useEffect(() => {
-    setDrinks([]);
-
-    if (!pub) return;
-    (async function () {
-      const todaysDrinks = await getTodaysDrinks(pub.id, pub.salesArea[0].id);
-      const todaysDate = Date.now();
-
-      setDrinks((drinks) => {
-        drinks.push({
-          date: todaysDate,
-          drinks: todaysDrinks,
-        });
-        return [...drinks];
-      });
-    })();
-
-    (async () => {
-      const historical = await getHistoricalDrinks(pub.id);
-
-      setDrinks((drinks) => {
-        drinks.push(...historical);
-        return [...drinks];
-      });
-    })();
-  }, [pub]);
 
   useEffect(() => {
     (async () => {
@@ -102,21 +72,20 @@ function App() {
             textAlign: 'center'
           }}
         >
-        <p style={{
-          fontWeight: 'bold',
-          marginBottom: 0,
-        }}>
-        ⚠️ The Wetherspoons API just had a major refactor! ⚠️
-        </p>
-        <p style={{
-          marginTop: 5
-        }}
-        >
-        🚧 Please bear with me as I rebuild the app 🚧
-        </p>
+          <p style={{
+            fontWeight: 'bold',
+            marginBottom: 0,
+          }}>
+            Made with 🍺 & ❤️  by Joss
+          </p>
+          <p style={{
+            marginTop: 5
+          }}
+          >
+            🚧 Please bear with me as I rebuild the app 🚧
+          </p>
         </div>
         <SearchResults
-          historicalDrinks={drinks}
           pub={pub}
           rankings={rankings}
         />

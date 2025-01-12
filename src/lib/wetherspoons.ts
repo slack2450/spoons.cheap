@@ -261,11 +261,8 @@ export async function getOpenPubs(): Promise<Pub[]> {
   // Fetch globals.json
   const globals: Globals = await (await fetch('https://oandp-appmgr-prod.s3.eu-west-2.amazonaws.com/global.json')).json();
 
-  console.log(globals)
-
   const open = new Set<string>();
   for (const venue of globals.venues) {
-    console.log(venue)
     if (venue.is_closed === 0 && venue.identifier != null) {
       open.add(venue.identifier.toString());
     }
