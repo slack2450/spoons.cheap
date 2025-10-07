@@ -6,9 +6,9 @@ import Chart from 'react-apexcharts';
 import { Drink } from './types/Drink';
 import { Pub } from './types/Pub';
 import { Ranking } from './types/Ranking';
-import { getTodaysDrinks } from './lib/wetherspoons';
+import { getTodaysDrinks, Venue, VenueDetailResponse } from './lib/wetherspoons';
 
-const PubContext = React.createContext<Pub | null>(null);
+const PubContext = React.createContext<VenueDetailResponse | null>(null);
 
 function RootBase(props: HTMLMotionProps<'div'>) {
   return (
@@ -119,7 +119,7 @@ function PubRanking({
   pub,
   rankings,
 }: {
-  pub: Pub | null;
+  pub: VenueDetailResponse | null;
   rankings: Ranking[];
 }) {
   if (!pub) return <></>;
@@ -261,7 +261,7 @@ export default function SearchResults({
   rankings,
 }: {
 
-  pub: Pub | null;
+  pub: VenueDetailResponse | null;
   rankings: Ranking[];
 }): JSX.Element {
 
@@ -272,7 +272,7 @@ export default function SearchResults({
       setDrinks([]);
       return;
     };
-    getTodaysDrinks(pub.id, pub.salesArea[0].id).then((drinks) => {
+    getTodaysDrinks(pub).then((drinks) => {
       setDrinks(drinks);
     });
   }, [pub])

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import SearchResults from './SearchResults';
 
 import { Search } from './Search';
-import { getOpenPubs } from './lib/wetherspoons';
+import { fetchVenueDetail, getPubs, Venue, VenueDetailResponse } from './lib/wetherspoons';
 import { Pub } from './types/Pub';
 import { getRankings } from './lib/internal';
 import { Ranking } from './types/Ranking';
@@ -22,14 +22,14 @@ const SearchContainer = styled(Container)({
 });
 
 function App() {
-  const [pubs, setPubs] = useState<Pub[]>([]);
+  const [pubs, setPubs] = useState<Venue[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
 
-  const [pub, setPub] = useState<Pub | null>(null);
+  const [pub, setPub] = useState<VenueDetailResponse | null>(null);
 
   useEffect(() => {
     (async () => {
-      const pubs = await getOpenPubs();
+      const pubs = await getPubs();
       setPubs(pubs);
     })();
 
@@ -54,8 +54,10 @@ function App() {
         </Typography>
         <Search
           options={pubs}
-          onChange={(_event, value) => {
-            setPub(value);
+          onChange={async (_event, value) => {
+            if (value) {
+              setPub(await fetchVenueDetail(value));
+            }
           }}
         />
         <div
