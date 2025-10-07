@@ -4,9 +4,8 @@ import React, { useEffect, useState } from 'react';
 
 import Chart from 'react-apexcharts';
 import { Drink } from './types/Drink';
-import { Pub } from './types/Pub';
 import { Ranking } from './types/Ranking';
-import { getTodaysDrinks, Venue, VenueDetailResponse } from './lib/wetherspoons';
+import { getTodaysDrinks, VenueDetailResponse } from './lib/wetherspoons';
 
 const PubContext = React.createContext<VenueDetailResponse | null>(null);
 

@@ -1,5 +1,4 @@
 import { Drink } from '../types/Drink';
-import { Pub } from '../types/Pub';
 
 export const HighLevelMenuSchema = z.object({
   canOrder: z.boolean(),
@@ -254,15 +253,6 @@ export async function getTodaysDrinks(venue: VenueDetailResponse): Promise<Drink
   return drinks;
 }
 
-
-interface GlobalsVenue {
-  identifier: number | null;
-  is_closed: number;
-}
-
-interface Globals {
-  venues: GlobalsVenue[];
-}
 
 import { z } from "zod";
 

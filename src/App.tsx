@@ -5,7 +5,6 @@ import SearchResults from './SearchResults';
 
 import { Search } from './Search';
 import { fetchVenueDetail, getPubs, Venue, VenueDetailResponse } from './lib/wetherspoons';
-import { Pub } from './types/Pub';
 import { getRankings } from './lib/internal';
 import { Ranking } from './types/Ranking';
 
