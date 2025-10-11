@@ -47,7 +47,7 @@ function Result({ drink }: { drink: Drink }) {
     setDetailedInfo(!detailedInfo);
     if (pub) {
 
-      const res = await fetch(`https://api.spoons.cheap/v2/price/${pub.id}/${drink.productId}?range=7d`);
+      const res = await fetch(`https://api.spoons.cheap/v2/price/${pub.venueRef}/${drink.productId}?range=7d`);
       let data = await res.json();
 
       data = data.map((item: { time: 'string', price: number }) => { return { time: new Date(item.time), price: item.price } });
