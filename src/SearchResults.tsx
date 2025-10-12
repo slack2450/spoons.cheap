@@ -3,11 +3,10 @@ import { HTMLMotionProps, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import Chart from 'react-apexcharts';
-import { Drink } from './types/Drink';
 import { Ranking } from './types/Ranking';
-import { getTodaysDrinks, VenueDetailResponse } from './lib/wetherspoons';
+import { Drink, getDrinks, HighLevelVenue } from 'wetherspoons-api';
 
-const PubContext = React.createContext<VenueDetailResponse | null>(null);
+const PubContext = React.createContext<HighLevelVenue | null>(null);
 
 function RootBase(props: HTMLMotionProps<'div'>) {
   return (
@@ -118,7 +117,7 @@ function PubRanking({
   pub,
   rankings,
 }: {
-  pub: VenueDetailResponse | null;
+  pub: HighLevelVenue | null;
   rankings: Ranking[];
 }) {
   if (!pub) return <></>;
@@ -260,7 +259,7 @@ export default function SearchResults({
   rankings,
 }: {
 
-  pub: VenueDetailResponse | null;
+  pub: HighLevelVenue | null;
   rankings: Ranking[];
 }): JSX.Element {
 
@@ -271,7 +270,7 @@ export default function SearchResults({
       setDrinks([]);
       return;
     };
-    getTodaysDrinks(pub).then((drinks) => {
+    getDrinks(pub).then((drinks) => {
       setDrinks(drinks);
     });
   }, [pub])

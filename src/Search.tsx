@@ -1,6 +1,6 @@
 import { styled, TextField, TextFieldProps, Autocomplete } from '@mui/material';
 import React from 'react';
-import { Venue } from './lib/wetherspoons';
+import { HighLevelVenue } from 'wetherspoons-api';
 
 function AutocompleteInput(props: TextFieldProps): JSX.Element {
   return <TextField {...props} placeholder="Search Pubs" variant="outlined" />;
@@ -20,8 +20,8 @@ const StyledAutoCompleteInput = styled(AutocompleteInput)({
 });
 
 type SearchProps = {
-  options: Venue[];
-  onChange: (event: React.SyntheticEvent, pub: Venue | null) => void;
+  options: HighLevelVenue[];
+  onChange: (event: React.SyntheticEvent, pub: HighLevelVenue | null) => void;
   className?: string;
 };
 
@@ -31,7 +31,7 @@ export function Search(props: SearchProps): JSX.Element {
       onChange={props.onChange}
       fullWidth
       options={props.options}
-      getOptionLabel={(option: Venue) => `${option.name}, ${option.address.town || option.address.county /*|| option.address.country.name*/}`}
+      getOptionLabel={(option: HighLevelVenue) => `${option.name}, ${option.address.town || option.address.county /*|| option.address.country.name*/}`}
       renderInput={(params: TextFieldProps) => (
         <StyledAutoCompleteInput {...params} className={props.className} />
       )}

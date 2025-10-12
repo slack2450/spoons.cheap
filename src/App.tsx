@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import SearchResults from './SearchResults';
 
 import { Search } from './Search';
-import { fetchVenueDetail, getPubs, Venue, VenueDetailResponse } from './lib/wetherspoons';
+import { HighLevelVenue, venues } from 'wetherspoons-api';
 import { getRankings } from './lib/internal';
 import { Ranking } from './types/Ranking';
 
@@ -21,14 +21,14 @@ const SearchContainer = styled(Container)({
 });
 
 function App() {
-  const [pubs, setPubs] = useState<Venue[]>([]);
+  const [pubs, setPubs] = useState<HighLevelVenue[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
 
-  const [pub, setPub] = useState<VenueDetailResponse | null>(null);
+  const [pub, setPub] = useState<HighLevelVenue | null>(null);
 
   useEffect(() => {
     (async () => {
-      const pubs = await getPubs();
+      const pubs = await venues();
       setPubs(pubs);
     })();
 
@@ -55,7 +55,7 @@ function App() {
           options={pubs}
           onChange={async (_event, value) => {
             if (value) {
-              setPub(await fetchVenueDetail(value));
+              setPub(value);
             }
           }}
         />
