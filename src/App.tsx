@@ -1,118 +1,47 @@
-import { Container, Typography, styled } from '@mui/material';
 import { useEffect, useState } from 'react';
-
-import SearchResults from './SearchResults';
-
-import { Search } from './Search';
 import { HighLevelVenue, venues } from 'wetherspoons-api';
-import { getRankings } from './lib/internal';
-import { Ranking } from './types/Ranking';
 
-const Root = styled(Container)({
-  minHeight: '100vh',
-  display: 'grid',
-  placeItems: 'center',
-});
-
-const SearchContainer = styled(Container)({
-  display: 'grid',
-  placeItems: 'center',
-  gridGap: '14px',
-});
+import { Landing } from './components/Landing';
+import { PubHeader } from './components/PubHeader';
+import { useLandingViewport } from './hooks/useLandingViewport';
+import SearchResults from './SearchResults';
 
 function App() {
   const [pubs, setPubs] = useState<HighLevelVenue[]>([]);
   const [pubsError, setPubsError] = useState<string | null>(null);
-  const [rankings, setRankings] = useState<Ranking[]>([]);
-
+  const [pubsLoading, setPubsLoading] = useState(true);
   const [pub, setPub] = useState<HighLevelVenue | null>(null);
+
+  useLandingViewport(!pub);
 
   useEffect(() => {
     let cancelled = false;
 
     venues()
       .then((loadedPubs) => {
-        if (!cancelled) setPubs(loadedPubs);
+        if (!cancelled) {
+          setPubs(loadedPubs);
+          setPubsError(null);
+        }
       })
       .catch((error: unknown) => {
         console.error('Failed to load pubs', error);
-        if (!cancelled) {
-          setPubsError('Unable to load pubs right now. Please try again shortly.');
-        }
-      });
-
-    getRankings()
-      .then((loadedRankings) => {
-        if (!cancelled) setRankings(loadedRankings);
+        if (!cancelled) setPubsError('We could not load the pub list. Please try again shortly.');
       })
-      .catch((error: unknown) => {
-        console.warn('Failed to load rankings', error);
+      .finally(() => {
+        if (!cancelled) setPubsLoading(false);
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return (
-    <Root>
-      <SearchContainer>
-        <Typography
-          style={{
-            fontFamily: 'Pacifico',
-            color: '#dcdcdc',
-            filter: 'drop-shadow(5px 5px 8px rgba(0, 0, 0, 0.8))',
-            fontSize: '10vw',
-          }}
-        >
-          Spoons.cheap
-        </Typography>
-        <Search
-          options={pubs}
-          onChange={async (_event, value) => {
-            if (value) {
-              setPub(value);
-            }
-          }}
-        />
-        {pubsError && (
-          <Typography role="alert" color="error" sx={{ backgroundColor: '#dcdcdc', padding: '8px', borderRadius: '5px' }}>
-            {pubsError}
-          </Typography>
-        )}
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#dcdcdc',
-            borderRadius: '5px',
-            display: 'grid',
-            placeItems: 'center',
-            padding: '10px',
-            boxShadow: '5px 5px 5px rgba(0,0,0,0.4)',
-            cursor: 'pointer',
-            textAlign: 'center'
-          }}
-        >
-          <p style={{
-            fontWeight: 'bold',
-            marginBottom: 0,
-          }}>
-            Made with 🍺 & ❤️  by Joss
-          </p>
-          <p style={{
-            marginTop: 5
-          }}
-          >
-            🚧 Please bear with me as I rebuild the app 🚧
-          </p>
-        </div>
-        <SearchResults
-          pub={pub}
-          rankings={rankings}
-        />
-      </SearchContainer>
-    </Root>
+    <main className={`w-full ${pub ? 'min-h-screen' : 'h-full min-h-0'}`}>
+      {!pub && <Landing pubs={pubs} loading={pubsLoading} error={pubsError} onSelect={setPub} />}
+      {pub && <PubHeader onClose={() => setPub(null)} />}
+      <SearchResults pub={pub} />
+      {pub && <footer className="grid min-h-[90px] place-items-center text-xs text-white/60">Made with 🍺 &amp; ❤️ by Joss</footer>}
+    </main>
   );
 }
 

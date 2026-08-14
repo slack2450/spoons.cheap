@@ -1,33 +1,35 @@
 {
   "short_name": "Spoons.Cheap",
   "name": "Spoons.Cheap",
+  "id": "/",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "/favicon-64x64.png",
       "sizes": "64x64",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "icon-120x120.png",
       "type": "image/png",
-      "sizes": "120x120",
       "purpose": "any"
     },
     {
-      "src": "icon-144x144.png",
+      "src": "/icon-192x192.png",
       "type": "image/png",
-      "sizes": "144x144",
-      "purpose": "any maskable"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
-      "src": "icon-180x180.png",
+      "src": "/icon-512x512.png",
       "type": "image/png",
-      "sizes": "180x180",
-      "purpose": "any maskable"
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#10251d"
 }

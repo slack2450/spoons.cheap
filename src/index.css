@@ -1,16 +1,136 @@
-body:before {
-  content: '';
-  display: block;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-brand: 'Pacifico', cursive;
+  --color-forest: #10251d;
+  --color-ink: #17231d;
+  --color-cream: #f7f2e8;
+  --color-paper: #fffdf8;
+  --color-lime: #d9ff4f;
+  --color-muted: #91a198;
+  --breakpoint-sm: 38.75rem;
+  --breakpoint-md: 56.25rem;
+}
+
+:root {
+  --page-background: linear-gradient(135deg, #58742b 0%, #405d2b 38%, #284735 68%, #10251d 92%, #081610 100%);
+  background-color: #10251d;
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  height: 100%;
+  min-height: -webkit-fill-available;
+  background-color: #10251d;
+  scroll-behavior: smooth;
+}
+
+html.ios-viewport-workaround { scroll-behavior: auto; }
+
+body {
+  isolation: isolate;
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  background: transparent;
+}
+
+body::before {
   position: fixed;
-  left: 0;
+  z-index: -1;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  z-index: -10;
-  /*background: linear-gradient(135deg, #d53369, #cbad6d);*/ /* Old background color */
-  background: linear-gradient(135deg, #00dbde, #fc00ff);
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+  background: var(--page-background);
   background-size: cover;
+  content: '';
+  pointer-events: none;
+}
+
+body.landing-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+body.landing-page #root {
+  height: 100vh;
+  height: 100dvh;
+}
+
+body.ios-landing-page {
+  position: relative;
+  width: 100%;
+  height: 140vh;
+  height: 140dvh;
+  min-height: 140vh;
+  min-height: 140dvh;
+  overflow: visible;
+  overscroll-behavior: auto;
+}
+
+body.ios-landing-page::before {
+  position: absolute;
+  height: 100%;
+  background: var(--page-background);
+}
+
+body.ios-landing-page #root {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+
+body.results-page::before { background: #10251d; }
+
+button { -webkit-tap-highlight-color: transparent; }
+
+.credit-beer,
+.credit-heart { display: inline-block; }
+
+.credit-beer {
+  transform-origin: 50% 90%;
+}
+
+[data-animate='true'] .credit-beer {
+  animation: credit-beer-rock 900ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+}
+
+[data-animate='true'] .credit-heart {
+  animation: credit-heart-pulse 900ms cubic-bezier(0.22, 1, 0.36, 1) 450ms both;
+}
+
+@keyframes credit-beer-rock {
+  0%, 100% { transform: rotate(0deg); }
+  24% { transform: rotate(-13deg); }
+  48% { transform: rotate(10deg); }
+  70% { transform: rotate(-5deg); }
+  86% { transform: rotate(2deg); }
+}
+
+@keyframes credit-heart-pulse {
+  0%, 100% { transform: scale(1); }
+  28% { transform: scale(1.3); }
+  52% { transform: scale(0.94); }
+  76% { transform: scale(1.14); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .credit-beer,
+  .credit-heart { animation: none; }
 }
