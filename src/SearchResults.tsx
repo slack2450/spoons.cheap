@@ -1,4 +1,5 @@
 import { styled, useTheme } from '@mui/material';
+import type { ApexAxisChartSeries, ApexOptions } from 'apexcharts';
 import { HTMLMotionProps, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
@@ -266,14 +267,27 @@ export default function SearchResults({
   const [drinks, setDrinks] = useState<Drink[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (!pub) {
       setDrinks([]);
       return;
+    }
+
+    setDrinks([]);
+    getDrinks(pub)
+      .then((result) => {
+        if (!cancelled) setDrinks(result.drinks);
+      })
+      .catch((error: unknown) => {
+        console.error(`Failed to load drinks for ${pub.name}`, error);
+        if (!cancelled) setDrinks([]);
+      });
+
+    return () => {
+      cancelled = true;
     };
-    getDrinks(pub).then((drinks) => {
-      setDrinks(drinks);
-    });
-  }, [pub])
+  }, [pub]);
 
   const theme = useTheme();
 
@@ -296,7 +310,7 @@ function PriceChart({
   data: { time: number; price: number }[];
   display: boolean;
 }) {
-  const [options, setOptions] = useState<ApexCharts.ApexOptions>({
+  const [options, setOptions] = useState<ApexOptions>({
     chart: {
       type: 'area',
       zoom: {

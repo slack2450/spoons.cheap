@@ -13,11 +13,12 @@
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.7",
+    "apexcharts": "^5.16.0",
     "framer-motion": "^11.3.24",
     "react": "^18.3.1",
-    "react-apexcharts": "^1.4.1",
+    "react-apexcharts": "^2.1.1",
     "react-dom": "^18.3.1",
-    "wetherspoons-api": "^0.0.7",
+    "wetherspoons-api": "^2.1.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {

@@ -22,20 +22,36 @@ const SearchContainer = styled(Container)({
 
 function App() {
   const [pubs, setPubs] = useState<HighLevelVenue[]>([]);
+  const [pubsError, setPubsError] = useState<string | null>(null);
   const [rankings, setRankings] = useState<Ranking[]>([]);
 
   const [pub, setPub] = useState<HighLevelVenue | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const pubs = await venues();
-      setPubs(pubs);
-    })();
+    let cancelled = false;
 
-    (async () => {
-      const rankings = await getRankings();
-      setRankings(rankings);
-    })();
+    venues()
+      .then((loadedPubs) => {
+        if (!cancelled) setPubs(loadedPubs);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load pubs', error);
+        if (!cancelled) {
+          setPubsError('Unable to load pubs right now. Please try again shortly.');
+        }
+      });
+
+    getRankings()
+      .then((loadedRankings) => {
+        if (!cancelled) setRankings(loadedRankings);
+      })
+      .catch((error: unknown) => {
+        console.warn('Failed to load rankings', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -59,6 +75,11 @@ function App() {
             }
           }}
         />
+        {pubsError && (
+          <Typography role="alert" color="error" sx={{ backgroundColor: '#dcdcdc', padding: '8px', borderRadius: '5px' }}>
+            {pubsError}
+          </Typography>
+        )}
         <div
           style={{
             width: '100%',
