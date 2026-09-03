@@ -5,18 +5,19 @@ import {
   ComboboxOptions,
 } from '@headlessui/react';
 import { useEffect, useMemo, useState } from 'react';
-import { HighLevelVenue } from 'wetherspoons-api';
+import type { Venue } from './api/types';
+import { accessibleText } from './lib/accessibleColors';
 
 type SearchProps = {
-  options: HighLevelVenue[];
+  options: Venue[];
   loading: boolean;
-  value: HighLevelVenue | null;
-  onChange: (pub: HighLevelVenue | null) => void;
+  value: Venue | null;
+  onChange: (pub: Venue | null) => void;
   onOpen?: () => void;
   onClose?: () => void;
 };
 
-function locationFor(pub: HighLevelVenue): string {
+function locationFor(pub: Venue): string {
   return pub.address.town || pub.address.county || 'United Kingdom';
 }
 
@@ -67,7 +68,7 @@ export function Search({ options, loading, value, onChange, onOpen, onClose }: S
               className="h-16 w-full rounded-[inherit] border border-ink/15 bg-transparent pr-5 pl-14 text-base outline-none hover:border-ink/30 focus:border-ink"
               aria-label="Search by pub name or town"
               placeholder="Search by pub name or town…"
-              displayValue={(pub: HighLevelVenue | null) => pub ? `${pub.name}, ${locationFor(pub)}` : ''}
+              displayValue={(pub: Venue | null) => pub ? `${pub.name}, ${locationFor(pub)}` : ''}
               onChange={(event) => {
                 setKeyboardNavigation(false);
                 setQuery(event.target.value);
@@ -88,8 +89,8 @@ export function Search({ options, loading, value, onChange, onOpen, onClose }: S
               static
               className={`max-h-[min(276px,calc(var(--visual-viewport-height,100dvh)_-_94px))] transform-gpu overflow-y-auto rounded-b-2xl border border-t-0 border-ink bg-paper px-1.5 pt-[22px] pb-1.5 text-ink outline-none transition-[translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${open ? 'pointer-events-auto translate-y-0' : 'pointer-events-none -translate-y-full'}`}
             >
-              {loading && <div className="px-4 py-3 text-sm text-ink/60" role="status">Loading pubs…</div>}
-              {!loading && filteredOptions.length === 0 && <div className="px-4 py-3 text-sm text-ink/60">No matching pubs found</div>}
+              {loading && <div className={`px-4 py-3 text-sm ${accessibleText.searchMuted.className}`} role="status">Loading pubs…</div>}
+              {!loading && filteredOptions.length === 0 && <div className={`px-4 py-3 text-sm ${accessibleText.searchMuted.className}`}>No matching pubs found</div>}
               {!loading && filteredOptions.map((pub) => (
                 <ComboboxOption
                   key={pub.id}
@@ -100,7 +101,7 @@ export function Search({ options, loading, value, onChange, onOpen, onClose }: S
                   <span className="text-[0.65rem] text-[#7b9d18]" aria-hidden="true">●</span>
                   <span className="flex min-w-0 flex-col">
                     <strong className="truncate font-semibold">{pub.name}</strong>
-                    <small className="mt-0.5 truncate text-ink/60">{locationFor(pub)}</small>
+                    <small className={`mt-0.5 truncate ${accessibleText.searchMuted.className}`}>{locationFor(pub)}</small>
                   </span>
                 </ComboboxOption>
               ))}

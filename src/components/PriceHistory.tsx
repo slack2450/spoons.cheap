@@ -3,6 +3,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { lazy, Suspense, useMemo } from 'react';
 
 import type { PricePoint, PriceRange } from '../hooks/usePriceHistory';
+import { formatMoney } from '../lib/money';
+import { ChartErrorBoundary } from './ChartErrorBoundary';
 
 const Chart = lazy(() => import('react-apexcharts'));
 
@@ -13,6 +15,7 @@ type PriceHistoryProps = {
   error: boolean;
   range: PriceRange;
   onRangeChange: (range: PriceRange) => void;
+  currency: string;
 };
 
 const ranges: { value: PriceRange; label: string }[] = [
@@ -33,7 +36,22 @@ function Message({ children, error = false, role }: { children: React.ReactNode;
   return <div className={`grid h-full place-items-center text-[0.82rem] ${error ? 'text-[#ffb6a1]' : 'text-muted'}`} role={role}>{children}</div>;
 }
 
-export function PriceHistory({ id, data, loading, error, range, onRangeChange }: PriceHistoryProps) {
+function ChartLoadFailure() {
+  return (
+    <div className="grid h-full place-content-center place-items-center gap-3 text-center text-[0.82rem] text-[#ffb6a1]" role="alert">
+      <span>Price chart could not be loaded.</span>
+      <button
+        type="button"
+        className="rounded-lg border border-white/20 px-3 py-2 font-semibold text-white hover:border-white/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+        onClick={() => window.location.reload()}
+      >
+        Reload page to retry
+      </button>
+    </div>
+  );
+}
+
+export function PriceHistory({ id, data, loading, error, range, onRangeChange, currency }: PriceHistoryProps) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -68,13 +86,20 @@ export function PriceHistory({ id, data, loading, error, range, onRangeChange }:
         {loading && <Message role="status">Loading price history…</Message>}
         {error && <Message error>Price history is unavailable right now.</Message>}
         {!loading && !error && data.length === 0 && <Message>No price changes recorded in this period.</Message>}
-        {data.length > 0 && <PriceChart data={data} range={range} />}
+        {data.length > 0 && (
+          <ChartErrorBoundary
+            resetKey={`${range}:${data.length}`}
+            fallback={<ChartLoadFailure />}
+          >
+            <PriceChart data={data} range={range} currency={currency} />
+          </ChartErrorBoundary>
+        )}
       </div>
     </motion.div>
   );
 }
 
-function PriceChart({ data, range }: { data: PricePoint[]; range: PriceRange }) {
+function PriceChart({ data, range, currency }: { data: PricePoint[]; range: PriceRange; currency: string }) {
   const options = useMemo<ApexOptions>(() => ({
     chart: {
       type: 'area',
@@ -98,7 +123,7 @@ function PriceChart({ data, range }: { data: PricePoint[]; range: PriceRange }) 
     yaxis: {
       min: Math.floor(Math.min(...data.map((point) => point.price))),
       tickAmount: 4,
-      labels: { style: { colors: '#91a198' }, formatter: (value) => `£${value.toFixed(2)}` },
+      labels: { style: { colors: '#91a198' }, formatter: value => formatMoney(value, currency) },
     },
     tooltip: {
       theme: 'dark',
@@ -109,9 +134,9 @@ function PriceChart({ data, range }: { data: PricePoint[]; range: PriceRange }) 
             ? 'HH:mm'
             : 'dd MMM HH:mm',
       },
-      y: { formatter: (value) => `£${value.toFixed(2)}` },
+      y: { formatter: value => formatMoney(value, currency) },
     },
-  }), [data, range]);
+  }), [currency, data, range]);
 
   const series = useMemo<ApexAxisChartSeries>(() => [{
     name: 'Price',

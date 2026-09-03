@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Drink, HighLevelVenue } from 'wetherspoons-api';
+import { requestJson } from '../api/request';
+import type { Drink, Venue } from '../api/types';
 
 export type PricePoint = { time: number; price: number };
 export type PriceRange = '24h' | '7d' | '30d' | '1y';
 
 const priceApiBase = import.meta.env.DEV ? '/price-api' : 'https://api.spoons.cheap';
 
-function parsePriceHistory(payload: unknown): PricePoint[] {
+export function parsePriceHistory(payload: unknown): PricePoint[] {
   if (!Array.isArray(payload)) throw new Error('Price history response is not an array');
 
   return payload.map((item) => {
@@ -24,16 +25,17 @@ function parsePriceHistory(payload: unknown): PricePoint[] {
   });
 }
 
-export function usePriceHistory(pub: HighLevelVenue, drink: Drink, enabled: boolean, range: PriceRange) {
+export function usePriceHistory(pub: Venue, drink: Drink, enabled: boolean, range: PriceRange) {
   const [data, setData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const cache = useRef(new Map<PriceRange, PricePoint[]>());
+  const cache = useRef(new Map<string, PricePoint[]>());
 
   useEffect(() => {
     if (!enabled) return;
 
-    const cachedData = cache.current.get(range);
+    const cacheKey = `${pub.venueRef}:${drink.productId}:${range}`;
+    const cachedData = cache.current.get(cacheKey);
     if (cachedData) {
       setData(cachedData);
       setLoading(false);
@@ -46,14 +48,13 @@ export function usePriceHistory(pub: HighLevelVenue, drink: Drink, enabled: bool
     setLoading(true);
     setError(false);
 
-    void fetch(
+    void requestJson<unknown>(
       `${priceApiBase}/v2/price/${pub.venueRef}/${drink.productId}?range=${range}`,
       { signal: controller.signal },
     )
-      .then(async (response) => {
-        if (!response.ok) throw new Error(`Price history returned ${response.status}`);
-        const points = parsePriceHistory(await response.json());
-        cache.current.set(range, points);
+      .then((payload) => {
+        const points = parsePriceHistory(payload);
+        cache.current.set(cacheKey, points);
         setData(points);
       })
       .catch((requestError: unknown) => {
