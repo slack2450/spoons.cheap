@@ -1,15 +1,13 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useId, useState } from 'react';
-import { Drink, HighLevelVenue } from 'wetherspoons-api';
+import type { Drink, Venue } from '../api/types';
 
 import { PriceRange, usePriceHistory } from '../hooks/usePriceHistory';
+import { accessibleText } from '../lib/accessibleColors';
+import { formatMoney } from '../lib/money';
 import { PriceHistory } from './PriceHistory';
 
-function money(value: number | null | undefined, places = 2): string {
-  return typeof value === 'number' ? `£${value.toFixed(places)}` : '—';
-}
-
-export function DrinkCard({ drink, position, pub }: { drink: Drink; position: number; pub: HighLevelVenue }) {
+export function DrinkCard({ drink, position, pub }: { drink: Drink; position: number; pub: Venue }) {
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState<PriceRange>('7d');
   const reduceMotion = useReducedMotion();
@@ -37,7 +35,7 @@ export function DrinkCard({ drink, position, pub }: { drink: Drink; position: nu
         aria-controls={historyId}
       >
         <div className="flex min-h-[25px] items-center gap-2">
-          <span className="text-[0.68rem] font-bold tracking-[0.09em] text-[#7b867f]">#{String(position + 1).padStart(2, '0')}</span>
+          <span className={`text-[0.68rem] font-bold tracking-[0.09em] ${open ? accessibleText.inkMuted.className : accessibleText.paperMuted.className}`}>#{String(position + 1).padStart(2, '0')}</span>
           {position < 3 && <span className="rounded-full bg-lime px-2 py-1 text-[0.61rem] font-bold tracking-[0.04em] text-[#425408] uppercase">Best value</span>}
           <span className={`ml-auto grid size-[25px] place-items-center rounded-full border text-[1.05rem] leading-none ${open ? 'border-lime/35 text-lime' : 'border-[#d4d8d1]'}`} aria-hidden="true">{open ? '−' : '+'}</span>
         </div>
@@ -46,18 +44,18 @@ export function DrinkCard({ drink, position, pub }: { drink: Drink; position: nu
 
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col">
-            <strong className="text-[1.9rem] leading-none tracking-[-0.06em]">{money(drink.ppu, 3)}</strong>
-            <span className={`mt-1.5 text-[0.67rem] ${open ? 'text-muted' : 'text-[#737e77]'}`}>per alcohol unit</span>
+            <strong className="text-[1.9rem] leading-none tracking-[-0.06em]">{formatMoney(drink.ppu, drink.currency, 3)}</strong>
+            <span className={`mt-1.5 text-[0.67rem] ${open ? accessibleText.inkMuted.className : accessibleText.paperMuted.className}`}>per alcohol unit</span>
           </div>
-          <div className="flex flex-col items-end gap-1 text-[0.65rem] text-[#7a847e] [&_strong]:text-xs">
-            <span><strong>{money(drink.price)}</strong> menu price</span>
+          <div className={`flex flex-col items-end gap-1 text-[0.65rem] ${open ? accessibleText.inkMuted.className : accessibleText.paperMuted.className} [&_strong]:text-xs`}>
+            <span><strong>{formatMoney(drink.price, drink.currency)}</strong> menu price</span>
             <span><strong>{drink.units.toFixed(2)}</strong> units</span>
           </div>
         </div>
       </button>
 
       <AnimatePresence initial={false}>
-        {open && <PriceHistory id={historyId} range={range} onRangeChange={setRange} {...history} />}
+        {open && <PriceHistory id={historyId} currency={drink.currency} range={range} onRangeChange={setRange} {...history} />}
       </AnimatePresence>
     </motion.article>
   );

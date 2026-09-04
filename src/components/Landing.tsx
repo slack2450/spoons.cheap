@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { HighLevelVenue } from 'wetherspoons-api';
+import type { Venue } from '../api/types';
 
+import { accessibleText } from '../lib/accessibleColors';
 import { Search } from '../Search';
 import { Brand } from './Brand';
 
 type LandingProps = {
-  pubs: HighLevelVenue[];
+  pubs: Venue[];
   loading: boolean;
   error: string | null;
-  onSelect: (pub: HighLevelVenue | null) => void;
+  onRetry: () => void;
+  onSelect: (pub: Venue | null) => void;
 };
 
-export function Landing({ pubs, loading, error, onSelect }: LandingProps) {
+export function Landing({ pubs, loading, error, onRetry, onSelect }: LandingProps) {
   const [searchActive, setSearchActive] = useState(false);
   const [creditVisible, setCreditVisible] = useState(true);
 
@@ -47,14 +49,25 @@ export function Landing({ pubs, loading, error, onSelect }: LandingProps) {
             onOpen={() => setSearchActive(true)}
             onClose={() => setSearchActive(false)}
           />
-          {error && <p className="m-[8px_6px_2px] p-[10px_12px] text-[0.85rem] text-[#ffd6cb]" role="alert">{error}</p>}
+          {error && (
+            <div className={`m-[8px_6px_2px] flex items-center gap-3 p-[10px_12px] text-[0.85rem] ${accessibleText.landingText.className}`} role="alert">
+              <span>{error}</span>
+              <button
+                type="button"
+                className="shrink-0 rounded-lg border border-white/40 px-3 py-2 font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+                onClick={onRetry}
+              >
+                Try again
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <p
         data-animate={!searchActive && creditVisible}
         data-hidden={searchActive || !creditVisible}
-        className="absolute inset-x-0 bottom-[max(26px,calc(env(safe-area-inset-bottom)+12px))] text-center text-xs whitespace-nowrap text-white/60 transition-opacity duration-300 max-sm:bottom-[max(72px,calc(env(safe-area-inset-bottom)+58px),calc(var(--browser-bottom-inset,0px)+18px))] max-sm:data-[hidden=true]:pointer-events-none max-sm:data-[hidden=true]:opacity-0"
+        className={`absolute inset-x-0 bottom-[max(26px,calc(env(safe-area-inset-bottom)+12px))] text-center text-xs whitespace-nowrap transition-opacity duration-300 max-sm:bottom-[max(72px,calc(env(safe-area-inset-bottom)+58px),calc(var(--browser-bottom-inset,0px)+18px))] max-sm:data-[hidden=true]:pointer-events-none max-sm:data-[hidden=true]:opacity-0 ${accessibleText.landingText.className}`}
       >
         Made with <span className="credit-beer" aria-hidden="true">🍺</span> &amp; <span className="credit-heart" aria-hidden="true">❤️</span> by Joss
       </p>
